@@ -1,0 +1,10 @@
+
+
+
+* set up env
+
+
+#+begin_src
+export LD_LIBRARY_PATH=/home/tomass/.elan/toolchains/leanprover--lean4---nightly-2022-01-12/lib/lean/:/home/tomass/Documents/HouLean/cpp/build/release/src/
+#+end_src
+  

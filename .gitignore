@@ -1,0 +1,10 @@
+/build
+/lean_packages
+/cpp/build/
+/cpp/.clangd/
+*~
+/houdini/otl/backup/
+/houdini/hip/backup/
+/cpp/compile_commands.json
+/houdini/hip/lean/
+/houdini/hip/render/
