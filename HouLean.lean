@@ -1,27 +1,16 @@
 import SciLean.Basic
 
-namespace Hou
+open SciLean
 
-  @[inline, extern "houlean_npoints"]
-  constant npoints (geo : UInt64) : IO UInt64
+namespace Hou
 
   @[inline, extern "houlean_time"]
   constant time : IO Float
 
-  @[inline, extern "houlean_foo"]
-  constant foo (n : UInt64) : UInt64
+  @[inline, extern "houlean_npoints"]
+  constant npoints (geo : UInt64) : IO UInt64
 
-  -- @[inline, extern "houlean_getattrib"]
-  -- constant getattrib (geo : UInt64) (attrib : String) (ptnum : UInt64) (dim : UInt64) : IO Float
-
-  @[inline, extern "houlean_getpoint_v3"]
-  constant getPointV3 (geo : UInt64) (attrib : String) (ptnum : UInt64) : IO (ℝ^(3 : Nat))
-
-  @[inline, extern "houlean_setpoint_v3"]
-  constant setPointV3_impl (attrib : String) (ptnum : UInt64) (x : Float) (y : Float) (z : Float) : IO Unit
-
-  constant setPointV3 (attrib : String) (ptnum : UInt64) (vec : ℝ^(3 : Nat)) : IO Unit := 
-    setPointV3_impl attrib ptnum (vec[0]) (vec[1]) (vec[2])
+  --- Point Attribute
 
   @[inline, extern "houlean_getpoint_r"]
   constant getPointR (geo : UInt64) (attrib : String) (ptnum : UInt64) : IO ℝ
@@ -29,8 +18,29 @@ namespace Hou
   @[inline, extern "houlean_setpoint_r"]
   constant setPointR (attrib : String) (ptnum : UInt64) (x : Float) : IO ℝ
 
-  @[export simple]
-  def simple (n : UInt64) : IO UInt64 := n
+  @[inline, extern "houlean_getpoint_v3"]
+  constant getPointV3 (geo : UInt64) (attrib : String) (ptnum : UInt64) : IO (ℝ^(3 : Nat))
+
+  @[inline, extern "houlean_setpoint_v3"]
+  constant setPointV3.impl (attrib : String) (ptnum : UInt64) (x : Float) (y : Float) (z : Float) : IO Unit
+
+  def setPointV3 (attrib : String) (ptnum : UInt64) (vec : ℝ^(3 : Nat)) : IO Unit := 
+    setPointV3.impl attrib ptnum (vec[0]) (vec[1]) (vec[2])
+
+  -- def getAllPointR (geo : UInt64) (attrib : String) : IO (Array ℝ) := do
+  --   let N := (← npoints geo).toNat
+  --   let mut arr : Array ℝ := Array.mkEmpty N
+  --   pure arr
+
+  --- Detail Attribute
+
+  @[inline, extern "houlean_getdetail_r"]
+  constant getDetailR (geo : UInt64) (attrib : String) : IO ℝ
+
+  @[inline, extern "houlean_setdetail_r"]
+  constant setDetailtR (attrib : String) (x : Float) : IO ℝ
+
+  -- Utility functions
 
   @[export io_unit]
   def io_unit : IO Unit := pure ()

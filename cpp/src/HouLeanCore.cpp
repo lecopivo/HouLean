@@ -220,6 +220,35 @@ extern "C" lean_object* houlean_setpoint_r(lean_object * attrib, uint64_t ptnum,
   return module.io_unit(io);
 }
 
+extern "C" lean_object* houlean_getdetail_r(uint64_t geoId, lean_object * attrib, lean_object* io) {
+
+  const char * attr = lean_to_string(attrib)->m_data;
+
+  if(geoId < 4 && houLeanContext.inGeo[geoId]){
+    auto geo = houLeanContext.inGeo[geoId];
+    GA_ROHandleD handle(geo, GA_ATTRIB_DETAIL, attr);
+
+    if(handle.isValid())
+      return module.io_float(handle.get(0), io);
+  }
+
+  return module.io_float(0.0, io);
+}
+
+extern "C" lean_object* houlean_setdetail_r(lean_object * attrib, double x, lean_object* io) {
+
+  const char * attr = lean_to_string(attrib)->m_data;
+
+  auto geo = houLeanContext.outGeo;
+  GA_RWHandleD handle(geo, GA_ATTRIB_DETAIL, attr);
+  if(handle.isValid()){
+    handle.set(0, x);
+  }
+  
+  return module.io_unit(io);
+}
+
+
 void newSopOperator(OP_OperatorTable *table) {
 
   table->addOperator(
