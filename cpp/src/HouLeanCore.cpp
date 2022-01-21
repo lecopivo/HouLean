@@ -1,5 +1,6 @@
 #include <iostream>
 #include <mutex>
+#include <set>
 #include <string>
 
 #include <dlfcn.h>
@@ -20,7 +21,10 @@
 #include "HouLeanCore.h"
 #include "utils/scope_guard.hpp"
 
-double global_time = 0.0;
+
+std::mutex contextMutex;
+
+int currentId;
 
 struct HouLeanContext{
 
@@ -31,10 +35,13 @@ struct HouLeanContext{
 
 } houLeanContext;
 
+void closeAllModules();
+
 struct LeanModule{
-  long int counter = 0;
   double compile_time = 0.0f;
+  
   void * module_handle = nullptr;
+  
   lean_object* (*initialize_Main)(lean_object*);
   lean_object* (*_lean_main)(lean_object*);
   void (*lean_initialize_runtime_module)();
@@ -62,11 +69,8 @@ struct LeanModule{
   int realoadModule(const char* modulePath, double compile_time) {
     if(module_handle == nullptr || compile_time > this->compile_time){
       std::cout << "Reloading Lean Module!" << std::endl;
-      // unload old library
-      if(module_handle != nullptr){
-	dlclose(module_handle);
-	module_handle = nullptr;
-      }
+      // close all existing libraries
+      closeAllModules();
 
       std::cout << "Current version: " << this->compile_time << std::endl;
       std::cout << "New version: " << compile_time << std::endl;
@@ -140,8 +144,23 @@ struct LeanModule{
       /* lean_dec_ref(res);  */
     }
   }
+
+};
+
+// use OP_Node->getUniqueId() as a key
+std::unordered_map<int, LeanModule> modules;
+
+void closeAllModules(){
   
-} module;
+  for(auto& [id, m] : modules){
+    
+    if(m.module_handle){
+      
+      dlclose(m.module_handle);
+      m.module_handle = nullptr;
+    }
+  }
+}
 
 extern "C" uint64_t houlean_foo(uint64_t n){
   std::cout << "Calling foo with: " << n << std::endl;
@@ -153,10 +172,10 @@ extern "C" lean_object* houlean_npoints(uint64_t geo, lean_object* io) {
   if(geo < 4 && houLeanContext.inGeo[geo]){
     n = houLeanContext.inGeo[geo]->getNumPoints();
   }
-  return module.io_uint64(n, io);
+  return modules[currentId].io_uint64(n, io);
 }
 
-extern "C" lean_object* houlean_time(lean_object* io) { return module.io_float(houLeanContext.time, io); }
+extern "C" lean_object* houlean_time(lean_object* io) { return modules[currentId].io_float(houLeanContext.time, io); }
 
 extern "C" lean_object* houlean_getpoint_v3(uint64_t geoId, lean_object * attrib, uint64_t ptnum, lean_object* io) {
 
@@ -168,11 +187,11 @@ extern "C" lean_object* houlean_getpoint_v3(uint64_t geoId, lean_object * attrib
     if(handle.isValid()){
       auto off = geo->pointOffset(ptnum);
       auto v = handle.get(off);
-      return module.io_vec3(v.x(), v.y(), v.z(), io);
+      return modules[currentId].io_vec3(v.x(), v.y(), v.z(), io);
     }
   }
   
-  return module.io_vec3(0.0, 0.0, 0.0, io);
+  return modules[currentId].io_vec3(0.0, 0.0, 0.0, io);
 }
 
 extern "C" lean_object* houlean_setpoint_v3(lean_object * attrib, uint64_t ptnum, double x, double y, double z, lean_object* io) {
@@ -186,7 +205,7 @@ extern "C" lean_object* houlean_setpoint_v3(lean_object * attrib, uint64_t ptnum
     handle.set(off, {x, y ,z});
   }
   
-  return module.io_unit(io);
+  return modules[currentId].io_unit(io);
 }
 
 extern "C" lean_object* houlean_getpoint_r(uint64_t geoId, lean_object * attrib, uint64_t ptnum, lean_object* io) {
@@ -199,11 +218,11 @@ extern "C" lean_object* houlean_getpoint_r(uint64_t geoId, lean_object * attrib,
     if(handle.isValid()){
       auto off = geo->pointOffset(ptnum);
       auto val = handle.get(off);
-      return module.io_float(val, io);
+      return modules[currentId].io_float(val, io);
     }
   }
   
-  return module.io_float(0.0, io);
+  return modules[currentId].io_float(0.0, io);
 }
 
 extern "C" lean_object* houlean_setpoint_r(lean_object * attrib, uint64_t ptnum, double x, lean_object* io) {
@@ -217,7 +236,7 @@ extern "C" lean_object* houlean_setpoint_r(lean_object * attrib, uint64_t ptnum,
     handle.set(off, x);
   }
   
-  return module.io_unit(io);
+  return modules[currentId].io_unit(io);
 }
 
 extern "C" lean_object* houlean_getdetail_r(uint64_t geoId, lean_object * attrib, lean_object* io) {
@@ -229,10 +248,10 @@ extern "C" lean_object* houlean_getdetail_r(uint64_t geoId, lean_object * attrib
     GA_ROHandleD handle(geo, GA_ATTRIB_DETAIL, attr);
 
     if(handle.isValid())
-      return module.io_float(handle.get(0), io);
+      return modules[currentId].io_float(handle.get(0), io);
   }
 
-  return module.io_float(0.0, io);
+  return modules[currentId].io_float(0.0, io);
 }
 
 extern "C" lean_object* houlean_setdetail_r(lean_object * attrib, double x, lean_object* io) {
@@ -245,7 +264,7 @@ extern "C" lean_object* houlean_setdetail_r(lean_object * attrib, double x, lean
     handle.set(0, x);
   }
   
-  return module.io_unit(io);
+  return modules[currentId].io_unit(io);
 }
 
 
@@ -299,6 +318,11 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
   // Duplicate incoming geometry
   duplicateSource(0, context);
 
+  // Lock Lean context
+  std::lock_guard contextGuard{contextMutex};
+
+  currentId = this->getUniqueId();
+
   houLeanContext.outGeo = gdp;
   for(int i=0;i<4;i++){
     houLeanContext.inGeo[i] = inputGeo(i);
@@ -309,20 +333,17 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
 
   houLeanContext.time = time;
 
-  std::cout << "Global time: " << global_time << std::endl;
-
-  // std::cout << "Geometry address is: " << gdp << std::endl;
-  // std::cout << "Geometry address is: " << (uint64_t)gdp << std::endl;
-  // std::cout << std::endl;
-
+  std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
   
   // Load external library
   UT_String callback_library;
   evalString(callback_library, "callback_library", 0, time);
   double compile_time = evalFloat("compile_time", 0, time);
 
-  if(module.realoadModule(callback_library, compile_time)){
-    module.callMain();
+  modules.try_emplace(currentId, LeanModule{});
+
+  if(modules[currentId].realoadModule(callback_library, compile_time)){
+    modules[currentId].callMain();
   }
 
   if (error() >= UT_ERROR_ABORT)
