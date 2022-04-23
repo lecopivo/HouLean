@@ -46,8 +46,8 @@ struct LeanModule{
   lean_object* (*_lean_main)(lean_object*);
   void (*lean_initialize_runtime_module)();
 
-  void (*lean_inc)(lean_object*);
-  void (*lean_dec)(lean_object*);
+  // void (*lean_inc)(lean_object*);
+  // void (*lean_dec)(lean_object*);
 
   lean_object* (*io_float)(double, lean_object*);
   lean_object* (*io_uint64)(uint64_t, lean_object*);
@@ -101,16 +101,16 @@ struct LeanModule{
       vec3_y = (double (*)(lean_object*))dlsym(module_handle, "vec3_y");
       vec3_z = (double (*)(lean_object*))dlsym(module_handle, "vec3_z");
 
-      std::cout << "lean_initialize_runtime_module " << lean_initialize_runtime_module << std::endl;
-      std::cout << "initialize_Main " << initialize_Main << std::endl;
-      std::cout << "_lean_main " << _lean_main << std::endl;
+      // std::cout << "lean_initialize_runtime_module " << lean_initialize_runtime_module << std::endl;
+      // std::cout << "initialize_Main " << initialize_Main << std::endl;
+      // std::cout << "_lean_main " << _lean_main << std::endl;
 
       if (!lean_initialize_runtime_module ||
 	  !initialize_Main ||
 	  !_lean_main ||
 	  // !lean_inc || !lean_dec ||
-	  !io_float || !io_uint64 || !io_vec3 || !io_unit ||
-	  !vec3_x || !vec3_y || !vec3_z){
+	  !io_float || !io_uint64 || !io_unit){ // ||  !io_vec3 ||
+	  // !vec3_x || !vec3_y || !vec3_z){
 
 	std::cout << "Error Message:" << std::endl << dlerror() << std::endl;
 	module_handle = nullptr;
@@ -120,15 +120,16 @@ struct LeanModule{
 
       std::cout << "Initializing module" << std::endl;
 
-      lean_object* res;
+      // lean_object* res;
       lean_initialize_runtime_module();
 
       std::cout << "Initializing main" << std::endl;
       
-      res = initialize_Main(lean_io_mk_world());
+      // res = 
+	initialize_Main(lean_io_mk_world());
 
       // this causes crash upon recompilation and realod of lean library
-      /* lean_dec_ref(res); */
+      // lean_dec_ref(res);
 
       this->compile_time = compile_time;
     }
@@ -141,11 +142,12 @@ struct LeanModule{
 
       std::cout << "Running main" << std::endl;
 
-      lean_object* res;
-      res = _lean_main(lean_io_mk_world());
+      // lean_object* res;
+      // res = 
+	_lean_main(lean_io_mk_world());
       
       // this causes crash upon recompilation and realod of lean library
-      /* lean_dec_ref(res);  */
+      // lean_dec_ref(res);
     }
   }
 

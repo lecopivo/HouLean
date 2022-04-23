@@ -1,6 +1,6 @@
-import SciLean.Basic
+-- import SciLean.Basic
 
-open SciLean
+-- open SciLean
 
 namespace Hou
 
@@ -18,14 +18,14 @@ namespace Hou
   @[inline, extern "houlean_setpoint_r"]
   constant setPointR (attrib : String) (ptnum : UInt64) (x : Float) : IO ℝ
 
-  @[inline, extern "houlean_getpoint_v3"]
-  constant getPointV3 (geo : UInt64) (attrib : String) (ptnum : UInt64) : IO (ℝ^(3 : Nat))
+  -- @[inline, extern "houlean_getpoint_v3"]
+  -- constant getPointV3 (geo : UInt64) (attrib : String) (ptnum : UInt64) : IO (ℝ^(3 : Nat))
 
-  @[inline, extern "houlean_setpoint_v3"]
-  constant setPointV3.impl (attrib : String) (ptnum : UInt64) (x : Float) (y : Float) (z : Float) : IO Unit
+  -- @[inline, extern "houlean_setpoint_v3"]
+  -- constant setPointV3.impl (attrib : String) (ptnum : UInt64) (x : Float) (y : Float) (z : Float) : IO Unit
 
-  def setPointV3 (attrib : String) (ptnum : UInt64) (vec : ℝ^(3 : Nat)) : IO Unit := 
-    setPointV3.impl attrib ptnum (vec[0].val) (vec[1].val) (vec[2].val)
+  -- def setPointV3 (attrib : String) (ptnum : UInt64) (vec : ℝ^(3 : Nat)) : IO Unit := 
+  --   setPointV3.impl attrib ptnum (vec[0].val) (vec[1].val) (vec[2].val)
 
   -- def getAllPointR (geo : UInt64) (attrib : String) : IO (Array ℝ) := do
   --   let N := (← npoints geo).toNat
@@ -51,16 +51,16 @@ namespace Hou
   @[export io_uint64]
   def io_uint64 (n : UInt64) : IO UInt64 := pure n
 
-  @[export io_vec3]
-  def io_vec3 (x y z : ℝ) : IO (ℝ^(3 : Nat)) := pure (^[x,y,z])
+  -- @[export io_vec3]
+  -- def io_vec3 (x y z : ℝ) : IO (ℝ^(3 : Nat)) := pure (^[x,y,z])
 
-  @[export vec3_x]
-  def vec3_x (u : @& ℝ^(3 : Nat)) : Float := (u.get 0).val
+  -- @[export vec3_x]
+  -- def vec3_x (u : @& ℝ^(3 : Nat)) : Float := (u.get 0).val
 
-  @[export vec3_y]
-  def vec3_y (u : @& ℝ^(3 : Nat)) : Float := (u.get 1).val
+  -- @[export vec3_y]
+  -- def vec3_y (u : @& ℝ^(3 : Nat)) : Float := (u.get 1).val
 
-  @[export vec3_z]
-  def vec3_z (u : @& ℝ^(3 : Nat)) : Float := (u.get 2).val
+  -- @[export vec3_z]
+  -- def vec3_z (u : @& ℝ^(3 : Nat)) : Float := (u.get 2).val
 
 end Hou

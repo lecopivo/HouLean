@@ -6,9 +6,11 @@ execute_process(COMMAND "lake" "script" "run" "lean_sysroot" WORKING_DIRECTORY "
 
 target_include_directories(libHouLeanCore PUBLIC "${LEAN_SYSROOT}/include")
 target_link_directories(libHouLeanCore PUBLIC "${LEAN_SYSROOT}/lib/lean")
+target_link_directories(libHouLeanCore PUBLIC "${CMAKE_SOURCE_DIR}/../build/lib")
 	    
-target_link_libraries(libHouLeanCore Houdini)
+target_link_libraries(libHouLeanCore PUBLIC Houdini)
+target_link_libraries(libHouLeanCore PUBLIC leanshared)
+# target_link_libraries(libHouLeanCore PUBLIC HouLean) -- this does not work
 
 houdini_configure_target(libHouLeanCore)
-
 
