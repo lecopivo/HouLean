@@ -1,4 +1,11 @@
 #pragma once
+#include <iostream>
+#include <set>
+
+#include <dlfcn.h>
+#include <stddef.h>
+
+#import <lean/lean.h>
 
 // TODO: split to *.h and *.cpp file
 

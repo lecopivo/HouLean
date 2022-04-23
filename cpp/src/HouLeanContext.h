@@ -2,6 +2,7 @@
 
 #include <GU/GU_Detail.h>
 
+#include <mutex>
 
 std::mutex contextMutex;
 
