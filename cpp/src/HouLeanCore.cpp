@@ -66,7 +66,7 @@ struct LeanModule{
     }
   }
 
-  int realoadModule(const char* modulePath, double compile_time) {
+  int realoadModule(const char *module_path, double compile_time) {
     if(module_handle == nullptr || compile_time > this->compile_time){
       std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
@@ -75,7 +75,7 @@ struct LeanModule{
       std::cout << "Current version: " << this->compile_time << std::endl;
       std::cout << "New version: " << compile_time << std::endl;
 
-      module_handle = dlopen(modulePath, RTLD_LOCAL | RTLD_NOW);
+      module_handle = dlopen(module_path, RTLD_LOCAL | RTLD_NOW);
 
       if (!module_handle) {
 	std::cout << "Error: Library failed to load!" << std::endl;
@@ -100,6 +100,10 @@ struct LeanModule{
       vec3_x = (double (*)(lean_object*))dlsym(module_handle, "vec3_x");
       vec3_y = (double (*)(lean_object*))dlsym(module_handle, "vec3_y");
       vec3_z = (double (*)(lean_object*))dlsym(module_handle, "vec3_z");
+
+      std::cout << "lean_initialize_runtime_module " << lean_initialize_runtime_module << std::endl;
+      std::cout << "initialize_Main " << initialize_Main << std::endl;
+      std::cout << "_lean_main " << _lean_main << std::endl;
 
       if (!lean_initialize_runtime_module ||
 	  !initialize_Main ||
@@ -129,7 +133,7 @@ struct LeanModule{
       this->compile_time = compile_time;
     }
 
-    return 1;  
+    return 1;
   }
 
   void callMain(){

@@ -25,7 +25,7 @@ namespace Hou
   constant setPointV3.impl (attrib : String) (ptnum : UInt64) (x : Float) (y : Float) (z : Float) : IO Unit
 
   def setPointV3 (attrib : String) (ptnum : UInt64) (vec : ℝ^(3 : Nat)) : IO Unit := 
-    setPointV3.impl attrib ptnum (vec[0]) (vec[1]) (vec[2])
+    setPointV3.impl attrib ptnum (vec[0].val) (vec[1].val) (vec[2].val)
 
   -- def getAllPointR (geo : UInt64) (attrib : String) : IO (Array ℝ) := do
   --   let N := (← npoints geo).toNat
@@ -55,12 +55,12 @@ namespace Hou
   def io_vec3 (x y z : ℝ) : IO (ℝ^(3 : Nat)) := pure (^[x,y,z])
 
   @[export vec3_x]
-  def vec3_x (u : @& ℝ^(3 : Nat)) : Float := u.get 0
+  def vec3_x (u : @& ℝ^(3 : Nat)) : Float := (u.get 0).val
 
   @[export vec3_y]
-  def vec3_y (u : @& ℝ^(3 : Nat)) : Float := u.get 1
+  def vec3_y (u : @& ℝ^(3 : Nat)) : Float := (u.get 1).val
 
   @[export vec3_z]
-  def vec3_z (u : @& ℝ^(3 : Nat)) : Float := u.get 2
+  def vec3_z (u : @& ℝ^(3 : Nat)) : Float := (u.get 2).val
 
 end Hou
