@@ -17,3 +17,5 @@
   export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/houdini19.0/dso
   houdini
 #+end_src
+
+If you open up scene from =houdini/hip/dev.hip= you should see the above picture.
