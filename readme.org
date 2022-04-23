@@ -1,3 +1,9 @@
+* HouLean
+
+  This Houdini plugin allows you to use Lean 4 as a scripting language/replacement of VEX. This plugin is highly experimental!
+
+  [[file:preview.png]]
+
 * Installation instructions
 
   To build =HouLean= run this command these commands. Replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.

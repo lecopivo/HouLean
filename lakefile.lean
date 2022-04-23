@@ -6,7 +6,7 @@ package HouLean {
   -- moreLinkArgs := #["-L/home/tomass/.elan/toolchains/leanprover--lean4---nightly-2022-01-12/lib/lean", "-lleanshared",
   --                   "-L/home/tomass/houdini19.0/dso", "-lHouLeanCore"],
   libName := "libHouLean"
-  -- moreLeancArgs := #["-g"]
+  moreLeancArgs := #["-O3", "-Wall", "-DNDEBUG"]
   -- dependencies := #[
   --   {name := `SciLean
   --    src := Source.git "https://github.com/lecopivo/SciLean.git" "40b117bbe839f8fcf07dc851906a04156489de4a"
@@ -19,12 +19,12 @@ script lean_sysroot (args) do
   return 0
 
 script build (args) do
-  let hih := System.FilePath.mk (args.getD 0 "")
-  let dsoDir := hih / "dso"
-  let otlDir := hih / "otls"
+  let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
+  let dsoDir := houUserPrefDir / "dso"
+  let otlDir := houUserPrefDir / "otls"
 
-  if ¬(← (hih / "houdini.env").pathExists) then
-    IO.eprintln s!"Invalid houdini preference directory! Could not find {hih / "houdini.env"}"
+  if ¬(← (houUserPrefDir / "houdini.env").pathExists) then
+    IO.eprintln s!"Invalid houdini preference directory! Could not find {houUserPrefDir / "houdini.env"}"
     return 1
 
   -- Build Lean part of the library
@@ -48,7 +48,7 @@ script build (args) do
   if ¬(← (← IO.currentDir) / "cpp" / "build" / "release" / "Makefile" |>.pathExists) then
     let buildHouLeanCoreStep2 ← IO.Process.spawn {
       cmd := "cmake"
-      args := #["../..", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1"]
+      args := #["../..", "-DCMAKE_EXPORT_COMPILE_COMMANDS=1", "-DCMAKE_BUILD_TYPE=Release"]
       cwd := (← IO.currentDir) / "cpp" / "build" / "release" |>.toString
     }
     let out ← buildHouLeanCoreStep2.wait
@@ -85,8 +85,10 @@ script build (args) do
   return 0
 
 script compile (args) do
-  -- let wrangleName := args.getD 0 ""
-  let wrangleDir := System.FilePath.mk (args.getD 0 "")
+  let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
+  let dsoDir := houUserPrefDir / "dso"
+
+  let wrangleDir := System.FilePath.mk (args.getD 1 "")
   let wrangleName := wrangleDir.fileName.getD ""
   -- let wrangleDir := (← IO.currentDir) / "wrangles" / wrangleName
   let wrangleLeanFile := wrangleDir / "Main.lean"
@@ -111,12 +113,8 @@ script compile (args) do
   let generateBinary ← IO.Process.output {
     cmd := "leanc"
     args := #[wrangleCFile.toString, 
-      -- "-I", (← getLeanIncludeDir).toString, 
-      "-g",
-      "-shared",
-      -- "-L", ((← IO.currentDir) / defaultBuildDir / defaultLibDir).toString, "-lHouLean",
-      -- "-lleanshared", "-lInit", "-lLean",
-      "-L/home/tomass/houdini19.5/dso", "-lHouLeanCore", "-lHouLean", "-lleanshared",
+      "-O3", "-Wall", "-DNDEBUG", "-shared",
+      s!"-L{dsoDir}", "-lHouLeanCore", "-lHouLean", "-lleanshared",
       "-o", wrangleLibFile.toString]
   }
   if generateBinary.exitCode ≠ 0 then
