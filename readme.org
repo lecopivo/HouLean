@@ -6,12 +6,13 @@
 
 * Installation instructions
 
-  To build =HouLean= run this command these commands. Replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.
+  To build =HouLean= run these commands:
 #+begin_src
   lake script run compileCpp /opt/hfs19.0
   lake build
   labe script run install ~/houdini19.0
 #+end_src
+  If necessary, replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.
 
   Before running Houdini you need to make sure =libHouLean.so= is found, do this by setting up =LD_LIBRARY_PATH= as follows. (Let me know if you have an idea how get rid of this step)
 #+begin_src
