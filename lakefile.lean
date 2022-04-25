@@ -3,14 +3,8 @@ open Lake DSL
 
 package HouLean {
   defaultFacet := PackageFacet.sharedLib
-  -- moreLinkArgs := #["-L/home/tomass/.elan/toolchains/leanprover--lean4---nightly-2022-01-12/lib/lean", "-lleanshared",
-  --                   "-L/home/tomass/houdini19.0/dso", "-lHouLeanCore"],
   libName := "libHouLean"
   moreLeancArgs := #["-O2", "-Wall", "-DNDEBUG"]
-  -- dependencies := #[
-  --   {name := `SciLean
-  --    src := Source.git "https://github.com/lecopivo/SciLean.git" "40b117bbe839f8fcf07dc851906a04156489de4a"
-  --   }]
 }
 
 script compileCpp (args) do
