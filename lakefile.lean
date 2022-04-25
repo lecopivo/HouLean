@@ -124,3 +124,20 @@ script compile (args) do
 
   return 0
 
+
+/-
+
+  USAGE: 
+  lake script run comple2 <lean_file> <
+  lake script run comple2 ~/houdini19.5 ~/Documents/SciLean:~/Documents/EigenLean ~/Documents/wrangles/testwrangle/Main.lean
+
+  -/
+
+-- script compile2 (args) do
+--   let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
+--   let dsoDir := houUserPrefDir / "dso"
+
+--   let wrangleDir := System.FilePath.mk (args.getD 1 "")
+
+--   let libs := args.getD 
+

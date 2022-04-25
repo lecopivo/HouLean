@@ -151,7 +151,12 @@ extern "C" LEAN_EXPORT lean_object* houlean_rw_handle_f(b_lean_obj_arg attrib, l
 
   auto * handle = new GA_RWHandleF(houLeanContext.outGeo, GA_ATTRIB_POINT, attr);
 
-  return lean_io_result_mk_ok(CppClass_to_lean(handle));
+  if(handle->isValid()){
+    return lean_io_result_mk_ok(CppClass_to_lean(handle));
+  }else{
+    lean_object * msg = lean_mk_string("Invalid point attribute!");
+    return lean_mk_io_user_error(msg);
+  }
 }
 
 extern "C" LEAN_EXPORT lean_object * houlean_rw_handle_f_get(b_lean_obj_arg o, uint64_t id, lean_object* io) {
@@ -178,7 +183,12 @@ extern "C" LEAN_EXPORT lean_object* houlean_rw_handle_v3(b_lean_obj_arg attrib, 
 
   auto * handle = new GA_RWHandleV3(houLeanContext.outGeo, GA_ATTRIB_POINT, attr);
 
-  return lean_io_result_mk_ok(CppClass_to_lean(handle));
+  if(handle->isValid()){
+    return lean_io_result_mk_ok(CppClass_to_lean(handle));
+  }else{
+    lean_object * msg = lean_mk_string("Invalid point attribute!");
+    return lean_mk_io_user_error(msg);
+  }
 }
 
 extern "C" LEAN_EXPORT lean_object * houlean_rw_handle_v3_get(b_lean_obj_arg o, uint64_t id, lean_object* io) {
