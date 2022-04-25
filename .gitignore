@@ -4,4 +4,7 @@
 *~
 /houdini/otl/backup/
 /houdini/hip/backup/
+/houdini/hip/lean/**/*.c
+/houdini/hip/lean/**/*.so
+
 /cpp/compile_commands.json

@@ -1,4 +1,4 @@
-* HouLean
+* Lean 4 in Houdini
 
   This Houdini plugin allows you to use Lean 4 as a scripting language/replacement of VEX. This plugin is highly experimental!
 
