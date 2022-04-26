@@ -1,4 +1,5 @@
 #pragma once
+#include <OP/OP_Operator.h>
 #include <iostream>
 #include <set>
 
@@ -6,8 +7,71 @@
 #include <stddef.h>
 
 #import <lean/lean.h>
+#include <unordered_map>
+
+#include <UT/UT_EnvControl.h>
+
+#include <filesystem>
 
 // TODO: split to *.h and *.cpp file
+void *lean_lib_handle = nullptr;
+void *houlean_lib_handle = nullptr;
+
+// loads if not already loaded
+int loadHouLean(){
+
+  const std::filesystem::path dir = UT_EnvControl::getString(ENV_HOUDINI_USER_PREF_DIR);
+
+  auto leanshared_path = dir;
+  leanshared_path.append("lib").append("libleanshared.so");
+  if(!lean_lib_handle){
+    lean_lib_handle = dlopen(leanshared_path.c_str(),
+			     RTLD_GLOBAL | RTLD_NOW);
+    if(!lean_lib_handle){
+      std::cerr << dlerror();
+      return 1;
+    }
+  }
+
+  auto houlean_path = dir;
+  houlean_path.append("lib").append("libHouLean.so");
+  if(!houlean_lib_handle){
+    houlean_lib_handle = dlopen(houlean_path.c_str(),
+				RTLD_GLOBAL | RTLD_NOW);
+    if(!houlean_lib_handle){
+      std::cerr << dlerror();
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int closeHouLean(){
+  
+  if(houlean_lib_handle){
+    int r = dlclose(houlean_lib_handle);
+    if(r){
+      std::cerr << dlerror();
+      return r;
+    }
+  }
+  
+  if(lean_lib_handle){
+    int r = dlclose(lean_lib_handle);
+    if(r){
+      std::cerr << dlerror();
+      return r;
+    }
+  }
+  
+  return 0;
+}
+
+// cloases and loads HouLean and Lean 
+int reloadHouLean(){
+  return closeHouLean() || loadHouLean();
+}
 
 void closeAllModules();
 
@@ -45,6 +109,8 @@ struct LeanModule{
       std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
       closeAllModules();
+
+      // reloadHouLean();
 
       std::cout << "Current version: " << this->compile_time << std::endl;
       std::cout << "New version: " << compile_time << std::endl;
@@ -140,4 +206,9 @@ void closeAllModules(){
       m.module_handle = nullptr;
     }
   }
+
+  // dlclose(houlean_lib_handle);
+  // dlclose(lean_lib_handle);
+  // houlean_lib_handle = nullptr;
+  // lean_lib_handle = nullptr;
 }

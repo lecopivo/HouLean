@@ -4,7 +4,7 @@ open Lake DSL
 package HouLean {
   defaultFacet := PackageFacet.sharedLib
   libName := "libHouLean"
-  moreLeancArgs := #["-O2", "-Wall", "-DNDEBUG"]
+  -- moreLinkArgs := #["-L/home/tomass/houdini19.5/dso/", "-lHouLeanCore"]
 }
 
 script compileCpp (args) do
@@ -23,7 +23,7 @@ script compileCpp (args) do
       cmd := "cmake"
       args := #["../../cpp", 
                 "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
-                "-DCMAKE_BUILD_TYPE=Release",
+                "-DCMAKE_BUILD_TYPE=Debug",
                 s!"-DCMAKE_HFS={hfs}",
                 s!"-DCMAKE_LEAN_SYSROOT={← getLeanSysroot}"]
       cwd := defaultBuildDir / "cpp" |>.toString      
@@ -48,7 +48,14 @@ script install (args) do
 
   let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
   let dsoDir := houUserPrefDir / "dso"
+  let libDir := houUserPrefDir / "lib"
   let otlDir := houUserPrefDir / "otls"
+
+  -- make lib directory
+  let makeLibDir ← IO.Process.run {
+    cmd := "mkdir"
+    args := #["-p", libDir.toString]
+  }
   
   -- Link libHouLean to dso directory
   let linkLib ← IO.Process.run {
@@ -58,6 +65,15 @@ script install (args) do
               "libHouLean.so"]
     cwd := dsoDir
   }
+
+  let linkLib ← IO.Process.run {
+    cmd := "ln"
+    args := #["-sf", 
+              (← getLeanLibDir) / "lean" / "libleanshared.so" |>.toString,
+              "libleanshared.so"]
+    cwd := dsoDir
+  }
+
   let linkOtl ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 

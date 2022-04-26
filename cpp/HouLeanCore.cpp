@@ -81,12 +81,14 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
   houLeanContext.outGeo = gdp;
   for(int i=0;i<4;i++){
     houLeanContext.inGeo[i] = inputGeo(i);
-  }		 
+  }
 
   flags().setTimeDep(true);
   fpreal time = context.getTime();
 
   houLeanContext.time = time;
+
+  // std::cout << "User preference directory is: " <<   << std::endl;
 
   std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
   
