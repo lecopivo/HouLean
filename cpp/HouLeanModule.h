@@ -6,19 +6,21 @@
 #include <dlfcn.h>
 #include <stddef.h>
 
-#import <lean/lean.h>
+#include <lean/lean.h>
 #include <unordered_map>
 
 #include <UT/UT_EnvControl.h>
 
 #include <filesystem>
 
+#include "HouLeanContext.h"
+#include "SopContext.h"
+
 // TODO: split to *.h and *.cpp file
 void *lean_lib_handle = nullptr;
-void *houlean_lib_handle = nullptr;
 
 // loads if not already loaded
-int loadHouLean(){
+int loadLean(){
 
   const std::filesystem::path dir = UT_EnvControl::getString(ENV_HOUDINI_USER_PREF_DIR);
 
@@ -28,40 +30,26 @@ int loadHouLean(){
     lean_lib_handle = dlopen(leanshared_path.c_str(),
 			     RTLD_GLOBAL | RTLD_NOW);
     if(!lean_lib_handle){
-      std::cerr << dlerror();
+      std::cerr << "Failed to load libleanshared.so: " << dlerror() << std::endl;
       return 1;
-    }
-  }
-
-  auto houlean_path = dir;
-  houlean_path.append("lib").append("libHouLean.so");
-  if(!houlean_lib_handle){
-    houlean_lib_handle = dlopen(houlean_path.c_str(),
-				RTLD_GLOBAL | RTLD_NOW);
-    if(!houlean_lib_handle){
-      std::cerr << dlerror();
-      return 1;
+    }else{
+      std::cout << "Loaded libleanshared.so" << std::endl;
     }
   }
 
   return 0;
 }
 
-int closeHouLean(){
-  
-  if(houlean_lib_handle){
-    int r = dlclose(houlean_lib_handle);
-    if(r){
-      std::cerr << dlerror();
-      return r;
-    }
-  }
-  
+int closeLean(){
+    
   if(lean_lib_handle){
     int r = dlclose(lean_lib_handle);
+    lean_lib_handle = nullptr;
     if(r){
-      std::cerr << dlerror();
+      std::cerr << "Failed to close libleanshared: " << dlerror() << std::endl;
       return r;
+    }else{
+      std::cout << "Closed libleanshared.so" << std::endl;
     }
   }
   
@@ -69,8 +57,10 @@ int closeHouLean(){
 }
 
 // cloases and loads HouLean and Lean 
-int reloadHouLean(){
-  return closeHouLean() || loadHouLean();
+int reloadLean(){
+  closeLean();
+  loadLean();
+  return 0;
 }
 
 void closeAllModules();
@@ -83,20 +73,7 @@ struct LeanModule{
   lean_object* (*initialize_Main)(lean_object*);
   lean_object* (*_lean_main)(lean_object*);
   void (*lean_initialize_runtime_module)();
-
-  // void (*lean_inc)(lean_object*);
-  // void (*lean_dec)(lean_object*);
-
-  lean_object* (*io_float)(double, lean_object*);
-  lean_object* (*io_uint64)(uint64_t, lean_object*);
-  lean_object* (*io_vec3)(double, double, double, lean_object*);
-  lean_object* (*io_unit)(lean_object*);
-
-  double (*vec3_x)(lean_object*);
-  double (*vec3_y)(lean_object*);
-  double (*vec3_z)(lean_object*);
-
-  // std::function<void(lean_object*)> lean_dec_ref_cold;
+  lean_object* (*mk_sop_context)(void*);
 
   ~LeanModule(){
     if(module_handle != nullptr){
@@ -105,12 +82,12 @@ struct LeanModule{
   }
 
   int realoadModule(const char *module_path, double compile_time) {
-    if(module_handle == nullptr || compile_time > this->compile_time){
+    if(module_handle == nullptr || compile_time != this->compile_time){
       std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
       closeAllModules();
 
-      // reloadHouLean();
+      reloadLean();
 
       std::cout << "Current version: " << this->compile_time << std::endl;
       std::cout << "New version: " << compile_time << std::endl;
@@ -124,35 +101,17 @@ struct LeanModule{
 	return 0;
       }
 
-      lean_initialize_runtime_module = (void (*)())dlsym(module_handle, "lean_initialize_runtime_module");
+      lean_initialize_runtime_module = (void (*)())dlsym(lean_lib_handle, "lean_initialize_runtime_module");
       initialize_Main = (lean_object* (*)(lean_object*))dlsym(module_handle, "initialize_Main");
-      _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "_lean_main");
-
-      // These must be loaded from the main libleanshared.so
-      // lean_inc = (void (*)(lean_object*))dlsym(module_handle, "lean_inc");
-      // lean_dec = (void (*)(lean_object*))dlsym(module_handle, "lean_dec");
-
-      io_float = (lean_object* (*)(double, lean_object*))dlsym(module_handle, "io_float");
-      io_uint64 = (lean_object* (*)(uint64_t, lean_object*))dlsym(module_handle, "io_uint64");
-      io_vec3 = (lean_object* (*)(double, double, double, lean_object*))dlsym(module_handle, "io_vec3");
-      io_unit = (lean_object* (*)(lean_object*))dlsym(module_handle, "io_unit");
-
-      vec3_x = (double (*)(lean_object*))dlsym(module_handle, "vec3_x");
-      vec3_y = (double (*)(lean_object*))dlsym(module_handle, "vec3_y");
-      vec3_z = (double (*)(lean_object*))dlsym(module_handle, "vec3_z");
-
-      // std::cout << "lean_initialize_runtime_module " << lean_initialize_runtime_module << std::endl;
-      // std::cout << "initialize_Main " << initialize_Main << std::endl;
-      // std::cout << "_lean_main " << _lean_main << std::endl;
+      _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "l_run"); //"_lean_main");
+      mk_sop_context = (lean_object* (*)(void*))dlsym(module_handle, "mk_sop_context");
 
       if (!lean_initialize_runtime_module ||
 	  !initialize_Main ||
 	  !_lean_main ||
-	  // !lean_inc || !lean_dec ||
-	  !io_float || !io_uint64 || !io_unit ||  !io_vec3 ||
-	  !vec3_x || !vec3_y || !vec3_z){
+	  !mk_sop_context){
 
-	std::cout << "Error Message:" << std::endl << dlerror() << std::endl;
+	std::cout << "Error Message: " << dlerror() << std::endl;
 	module_handle = nullptr;
 	this->compile_time = 0.0;
 	return 0;
@@ -165,8 +124,8 @@ struct LeanModule{
 
       std::cout << "Initializing main" << std::endl;
       
-      // res = 
-	initialize_Main(lean_io_mk_world());
+      // res =
+      initialize_Main(lean_io_mk_world());
 
       // this causes crash upon recompilation and realod of lean library
       // lean_dec_ref(res);
@@ -183,8 +142,11 @@ struct LeanModule{
       std::cout << "Running main" << std::endl;
 
       // lean_object* res;
-      // res = 
-	_lean_main(lean_io_mk_world());
+      // res =
+      auto sopContext = new SopContext;
+      sopContext->time = houLeanContext.time;
+
+      _lean_main(mk_sop_context((void*)sopContext));
       
       // this causes crash upon recompilation and realod of lean library
       // lean_dec_ref(res);

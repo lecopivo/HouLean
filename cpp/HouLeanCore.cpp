@@ -21,7 +21,8 @@
 #include "HouLeanCore.h"
 #include "utils/scope_guard.hpp"
 
-#include "HouLeanFunctions.h"
+#include "HouLeanContext.h"
+#include "HouLeanModule.h"
 
 void newSopOperator(OP_OperatorTable *table) {
 

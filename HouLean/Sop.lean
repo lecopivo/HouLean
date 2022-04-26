@@ -23,5 +23,11 @@ namespace Hou
 
   @[export houlean_sop_mk_vec3]
   def Sop.capi.vec3 (x y z : Float) : Sop Vec3 := pure ⟨x,y,z⟩
+
+
+  @[extern "houlean_print"]
+  constant print (msg : String) : Sop Unit
+
+  def println (msg : String) : Sop Unit := print (msg ++ "\n")
   
 end Hou

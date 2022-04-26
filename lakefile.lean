@@ -59,21 +59,12 @@ script install (args) do
     args := #["-p", libDir.toString]
   }
   
-  -- Link libHouLean to dso directory
-  let linkLib ← IO.Process.run {
-    cmd := "ln"
-    args := #["-sf", 
-              (← IO.currentDir) / "build" / "lib" / "libHouLean.so" |>.toString,
-              "libHouLean.so"]
-    cwd := dsoDir
-  }
-
   let linkLib ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
               (← getLeanLibDir) / "lean" / "libleanshared.so" |>.toString,
               "libleanshared.so"]
-    cwd := dsoDir
+    cwd := libDir
   }
 
   let linkOtl ← IO.Process.run {
