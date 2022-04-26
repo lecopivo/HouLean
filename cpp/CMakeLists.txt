@@ -19,3 +19,7 @@ target_link_libraries(libHouLeanCore PUBLIC Houdini)
 
 houdini_configure_target(libHouLeanCore)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+add_library(ExternFuns STATIC ExternFun.cpp)
+target_include_directories(ExternFuns PUBLIC "${CMAKE_LEAN_SYSROOT}/include")
