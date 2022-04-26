@@ -1,10 +1,12 @@
 import Lake
 open Lake DSL
 
+
 package HouLean {
-  defaultFacet := PackageFacet.sharedLib
+  defaultFacet := PackageFacet.staticLib
   libName := "libHouLean"
-  -- moreLinkArgs := #["-L/home/tomass/houdini19.5/dso/", "-lHouLeanCore"]
+  moreLeancArgs := #["-fPIC"]
+  -- moreLinkArgs := #[ s!"-L./build/cpp", "-lHouLeanCApi"]
 }
 
 script compileCpp (args) do
