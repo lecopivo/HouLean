@@ -44,9 +44,8 @@ extern "C" lean_object *houlean_rw_handle_f(b_lean_obj_arg _attr, uint8_t _owner
   if(houlean_attr_owner_is_primitive(_owner))
     owner = GA_ATTRIB_PRIMITIVE;
 
-  auto ctx = to_cppClass<SopContext>(context);
-
-  auto * handle = new GA_RWHandleF(ctx->geo, owner, attr);
+  auto ctx    = to_cppClass<SopContext>(context);
+  auto handle = new GA_RWHandleF(ctx->geo, owner, attr);
 
   // houlean_sop
   if(handle->isValid()){
@@ -59,7 +58,7 @@ extern "C" lean_object *houlean_rw_handle_f(b_lean_obj_arg _attr, uint8_t _owner
 
 extern "C" lean_object* houlean_rw_handle_f_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
 
-  auto ctx = to_cppClass<SopContext>(context);
+  auto ctx    = to_cppClass<SopContext>(context);
   auto handle = to_cppClass<GA_RWHandleF>(_handle);
 
   return houlean_sop_mk_float(handle->get(ctx->geo->pointOffset(idx)), context);
@@ -67,14 +66,13 @@ extern "C" lean_object* houlean_rw_handle_f_get(b_lean_obj_arg _handle, size_t i
 
 extern "C" lean_object* houlean_rw_handle_f_set(b_lean_obj_arg _handle, size_t idx, double val, lean_object* context){
 
-  auto ctx = to_cppClass<SopContext>(context);
+  auto ctx    = to_cppClass<SopContext>(context);
   auto handle = to_cppClass<GA_RWHandleF>(_handle);
 
   handle->set(ctx->geo->pointOffset(idx), val);
 
   return houlean_sop_mk_unit(context);
 }
-
 
 extern "C" lean_object *houlean_rw_handle_v3(b_lean_obj_arg _attr, uint8_t _owner, lean_object* context){
 
@@ -89,9 +87,8 @@ extern "C" lean_object *houlean_rw_handle_v3(b_lean_obj_arg _attr, uint8_t _owne
   if(houlean_attr_owner_is_primitive(_owner))
     owner = GA_ATTRIB_PRIMITIVE;
 
-  auto ctx = to_cppClass<SopContext>(context);
-
-  auto * handle = new GA_RWHandleV3(ctx->geo, owner, attr);
+  auto ctx    = to_cppClass<SopContext>(context);
+  auto handle = new GA_RWHandleV3(ctx->geo, owner, attr);
 
   // houlean_sop
   if(handle->isValid()){
@@ -104,7 +101,7 @@ extern "C" lean_object *houlean_rw_handle_v3(b_lean_obj_arg _attr, uint8_t _owne
 
 extern "C" lean_object* houlean_rw_handle_v3_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
 
-  auto ctx = to_cppClass<SopContext>(context);
+  auto ctx    = to_cppClass<SopContext>(context);
   auto handle = to_cppClass<GA_RWHandleV3>(_handle);
 
   auto vec = handle->get(ctx->geo->pointOffset(idx));
@@ -114,7 +111,7 @@ extern "C" lean_object* houlean_rw_handle_v3_get(b_lean_obj_arg _handle, size_t 
 
 extern "C" lean_object* houlean_rw_handle_v3_set(b_lean_obj_arg _handle, size_t idx, b_lean_obj_arg vec, lean_object* context){
 
-  auto ctx = to_cppClass<SopContext>(context);
+  auto ctx    = to_cppClass<SopContext>(context);
   auto handle = to_cppClass<GA_RWHandleV3>(_handle);
 
   float x = houlean_vec3_x(vec);
