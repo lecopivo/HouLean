@@ -4,9 +4,6 @@ open Lake DSL
 
 package HouLean {
   defaultFacet := PackageFacet.staticLib
-  libName := "libHouLean"
-  moreLeancArgs := #["-fPIC"]
-  -- moreLinkArgs := #[ s!"-L./build/cpp", "-lHouLeanCApi"]
 }
 
 script compileCpp (args) do
@@ -25,7 +22,7 @@ script compileCpp (args) do
       cmd := "cmake"
       args := #["../../cpp", 
                 "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
-                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_BUILD_TYPE=Release",
                 s!"-DCMAKE_HFS={hfs}",
                 s!"-DCMAKE_LEAN_SYSROOT={← getLeanSysroot}"]
       cwd := defaultBuildDir / "cpp" |>.toString      

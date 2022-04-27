@@ -21,7 +21,7 @@
 #include "HouLeanCore.h"
 #include "utils/scope_guard.hpp"
 
-#include "HouLeanContext.h"
+// #include "HouLeanContext.h"
 #include "HouLeanModule.h"
 
 void newSopOperator(OP_OperatorTable *table) {
@@ -75,33 +75,38 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
   duplicateSource(0, context);
 
   // Lock Lean context
-  std::lock_guard contextGuard{contextMutex};
+  // std::lock_guard contextGuard{contextMutex};
 
-  currentId = this->getUniqueId();
+  int currentId = this->getUniqueId();
 
-  houLeanContext.outGeo = gdp;
-  for(int i=0;i<4;i++){
-    houLeanContext.inGeo[i] = inputGeo(i);
-  }
+  // houLeanContext.outGeo = gdp;
+  // for(int i=0;i<4;i++){
+  //   houLeanContext.inGeo[i] = inputGeo(i);
+  // }
 
   flags().setTimeDep(true);
   fpreal time = context.getTime();
 
-  houLeanContext.time = time;
+  // houLeanContext.time = time;
 
   // std::cout << "User preference directory is: " <<   << std::endl;
 
-  std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
+  // std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
   
   // Load external library
   UT_String callback_library;
   evalString(callback_library, "callback_library", 0, time);
   double compile_time = evalFloat("compile_time", 0, time);
 
-  modules.try_emplace(currentId, LeanModule{});
+  LeanModule * module;
+  {
+    std::lock_guard contextGuard{moduleMutex};
+    modules.try_emplace(currentId, LeanModule{});
+    module = &modules[currentId];
+  }
 
-  if(modules[currentId].realoadModule(callback_library, compile_time)){
-    modules[currentId].callMain();
+  if(module->realoadModule(callback_library, compile_time)){
+    module->callMain(time, gdp);
   }
 
   if (error() >= UT_ERROR_ABORT)

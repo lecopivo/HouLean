@@ -14,10 +14,5 @@
 #+end_src
   If necessary, replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.
 
-  Before running Houdini you need to make sure =libHouLean.so= is found, do this by setting up =LD_LIBRARY_PATH= as follows. (Let me know if you have an idea how get rid of this step)
-#+begin_src
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/houdini19.0/dso
-  houdini
-#+end_src
-
-If you open up scene from =houdini/hip/example.hip= you should see the above picture.
+  You can find the above example scene in =houdini/hip/example.hip=.
+  

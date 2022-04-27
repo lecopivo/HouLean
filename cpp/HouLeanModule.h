@@ -30,10 +30,10 @@ int loadLean(){
     lean_lib_handle = dlopen(leanshared_path.c_str(),
 			     RTLD_GLOBAL | RTLD_NOW);
     if(!lean_lib_handle){
-      std::cerr << "Failed to load libleanshared.so: " << dlerror() << std::endl;
+      // std::cerr << "Failed to load libleanshared.so: " << dlerror() << std::endl;
       return 1;
     }else{
-      std::cout << "Loaded libleanshared.so" << std::endl;
+      // std::cout << "Loaded libleanshared.so" << std::endl;
     }
   }
 
@@ -46,10 +46,10 @@ int closeLean(){
     int r = dlclose(lean_lib_handle);
     lean_lib_handle = nullptr;
     if(r){
-      std::cerr << "Failed to close libleanshared: " << dlerror() << std::endl;
+      // std::cerr << "Failed to close libleanshared: " << dlerror() << std::endl;
       return r;
     }else{
-      std::cout << "Closed libleanshared.so" << std::endl;
+      // std::cout << "Closed libleanshared.so" << std::endl;
     }
   }
   
@@ -83,27 +83,27 @@ struct LeanModule{
 
   int realoadModule(const char *module_path, double compile_time) {
     if(module_handle == nullptr || compile_time != this->compile_time){
-      std::cout << "Reloading Lean Module!" << std::endl;
+      // std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
       closeAllModules();
 
       reloadLean();
 
-      std::cout << "Current version: " << this->compile_time << std::endl;
-      std::cout << "New version: " << compile_time << std::endl;
+      // std::cout << "Current version: " << this->compile_time << std::endl;
+      // std::cout << "New version: " << compile_time << std::endl;
 
       module_handle = dlopen(module_path, RTLD_LOCAL | RTLD_NOW);
 
       if (!module_handle) {
-	std::cout << "Error: Library failed to load!" << std::endl;
-	std::cout << "Error Message:" << std::endl << dlerror() << std::endl;
+	// std::cout << "Error: Library failed to load!" << std::endl;
+	// std::cout << "Error Message:" << std::endl << dlerror() << std::endl;
 	this->compile_time = 0.0;
 	return 0;
       }
 
       lean_initialize_runtime_module = (void (*)())dlsym(lean_lib_handle, "lean_initialize_runtime_module");
       initialize_Main = (lean_object* (*)(lean_object*))dlsym(module_handle, "initialize_Main");
-      _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "l_run"); //"_lean_main");
+      _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "l_run");
       mk_sop_context = (lean_object* (*)(void*))dlsym(module_handle, "mk_sop_context");
 
       if (!lean_initialize_runtime_module ||
@@ -111,18 +111,18 @@ struct LeanModule{
 	  !_lean_main ||
 	  !mk_sop_context){
 
-	std::cout << "Error Message: " << dlerror() << std::endl;
+	// std::cout << "Error Message: " << dlerror() << std::endl;
 	module_handle = nullptr;
 	this->compile_time = 0.0;
 	return 0;
       }
 
-      std::cout << "Initializing module" << std::endl;
+      // std::cout << "Initializing module" << std::endl;
 
       // lean_object* res;
       lean_initialize_runtime_module();
 
-      std::cout << "Initializing main" << std::endl;
+      // std::cout << "Initializing main" << std::endl;
       
       // res =
       initialize_Main(lean_io_mk_world());
@@ -136,17 +136,17 @@ struct LeanModule{
     return 1;
   }
 
-  void callMain(){
+  void callMain(double time, GU_Detail * geo){
     if(module_handle && _lean_main){
 
-      std::cout << "Running main" << std::endl;
+      // std::cout << "Running main" << std::endl;
 
       // lean_object* res;
       // res =
       auto sopContext = new SopContext;
-      sopContext->time = houLeanContext.time;
-      sopContext->geo = houLeanContext.outGeo;
-      sopContext->ref_geo.push_back(houLeanContext.outGeo);
+      sopContext->time = time;
+      sopContext->geo = geo;
+      sopContext->ref_geo.push_back(geo);
       
       _lean_main(mk_sop_context((void*)sopContext));
       
@@ -157,6 +157,7 @@ struct LeanModule{
 
 };
 
+std::mutex moduleMutex;
 // use OP_Node->getUniqueId() as a key
 std::unordered_map<int, LeanModule> modules;
 
