@@ -145,7 +145,9 @@ struct LeanModule{
       // res =
       auto sopContext = new SopContext;
       sopContext->time = houLeanContext.time;
-
+      sopContext->geo = houLeanContext.outGeo;
+      sopContext->ref_geo.push_back(houLeanContext.outGeo);
+      
       _lean_main(mk_sop_context((void*)sopContext));
       
       // this causes crash upon recompilation and realod of lean library
