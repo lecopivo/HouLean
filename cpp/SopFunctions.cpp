@@ -1,12 +1,14 @@
-#include "CppClass.h"
-
-#include "SopContext.h"
-#include "SopCApi.h"
-#include "lean/lean.h"
+#include <iostream>
 
 #include <GA/GA_Handle.h>
 #include <GA/GA_Types.h>
-#include <iostream>
+
+#include <lean/lean.h>
+
+#include "CppClass.h"
+#include "SopContext.h"
+#include "SopCApi.h"
+
 
 extern "C" lean_object* mk_sop_context(void* sopContext){
   return CppClass_to_lean<SopContext>((SopContext*)sopContext);
