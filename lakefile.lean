@@ -1,10 +1,9 @@
 import Lake
 open Lake DSL
 
+
 package HouLean {
-  defaultFacet := PackageFacet.sharedLib
-  libName := "libHouLean"
-  -- moreLinkArgs := #["-L/home/tomass/houdini19.5/dso/", "-lHouLeanCore"]
+  defaultFacet := PackageFacet.staticLib
 }
 
 script compileCpp (args) do
@@ -23,7 +22,7 @@ script compileCpp (args) do
       cmd := "cmake"
       args := #["../../cpp", 
                 "-DCMAKE_EXPORT_COMPILE_COMMANDS=1",
-                "-DCMAKE_BUILD_TYPE=Debug",
+                "-DCMAKE_BUILD_TYPE=Release",
                 s!"-DCMAKE_HFS={hfs}",
                 s!"-DCMAKE_LEAN_SYSROOT={← getLeanSysroot}"]
       cwd := defaultBuildDir / "cpp" |>.toString      
@@ -57,15 +56,6 @@ script install (args) do
     args := #["-p", libDir.toString]
   }
   
-  -- Link libHouLean to dso directory
-  let linkLib ← IO.Process.run {
-    cmd := "ln"
-    args := #["-sf", 
-              (← IO.currentDir) / "build" / "lib" / "libHouLean.so" |>.toString,
-              "libHouLean.so"]
-    cwd := libDir
-  }
-
   let linkLib ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
