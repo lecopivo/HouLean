@@ -2,7 +2,7 @@ import HouLean.Data
 
 namespace Hou
 
-  constant SopContext.nonempty : NonemptyType   
+  opaque SopContext.nonempty : NonemptyType   
   def SopContext := SopContext.nonempty.type
   instance : Nonempty SopContext := SopContext.nonempty.property
   
@@ -33,7 +33,7 @@ namespace Hou
   def Sop.capi.error {α} (msg : String) : Sop α := λ σ => .error (.user_error msg) σ
 
   @[extern "houlean_print"]
-  constant print (msg : @& String) : Sop Unit
+  opaque print (msg : @& String) : Sop Unit
 
   def println (msg : String) : Sop Unit := print (msg ++ "\n")
   

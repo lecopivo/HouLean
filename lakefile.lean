@@ -1,17 +1,20 @@
 import Lake
 open Lake DSL
 
+package houlean
 
-package HouLean {
-  defaultFacet := PackageFacet.staticLib
+@[defaultTarget]
+lean_lib HouLean {
+  roots := #[`HouLean]
 }
+
 
 script compileCpp (args) do
 
   let hfs := System.FilePath.mk (args.getD 0 "")
 
   -- make build directory
-  let makeBuildDir ← IO.Process.run {
+  let _ ← IO.Process.run {
     cmd := "mkdir"
     args := #["-p", "build/cpp"]
   }
@@ -46,17 +49,18 @@ script compileCpp (args) do
 script install (args) do
 
   let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
-  let dsoDir := houUserPrefDir / "dso"
+  -- let dsoDir := houUserPrefDir / "dso"
   let libDir := houUserPrefDir / "lib"
   let otlDir := houUserPrefDir / "otls"
 
   -- make lib directory
-  let makeLibDir ← IO.Process.run {
+  let _ ← IO.Process.run {
     cmd := "mkdir"
     args := #["-p", libDir.toString]
   }
   
-  let linkLib ← IO.Process.run {
+  -- link Lib
+  let _ ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
               (← getLeanLibDir) / "lean" / "libleanshared.so" |>.toString,
@@ -64,7 +68,8 @@ script install (args) do
     cwd := libDir
   }
 
-  let linkOtl ← IO.Process.run {
+  -- link otl
+  let _ ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
               (← IO.currentDir) / "houdini" / "otl" / "sop_tomass.dev.lean.1.0.hda" |>.toString,
