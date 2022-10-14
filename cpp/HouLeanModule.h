@@ -29,7 +29,7 @@ int loadLean(){
     lean_lib_handle = dlopen(leanshared_path.c_str(),
 			     RTLD_GLOBAL | RTLD_NOW);
     if(!lean_lib_handle){
-      // std::cerr << "Failed to load libleanshared.so: " << dlerror() << std::endl;
+      std::cerr << "Failed to load libleanshared.so: " << dlerror() << std::endl;
       return 1;
     }else{
       // std::cout << "Loaded libleanshared.so" << std::endl;
@@ -45,7 +45,7 @@ int closeLean(){
     int r = dlclose(lean_lib_handle);
     lean_lib_handle = nullptr;
     if(r){
-      // std::cerr << "Failed to close libleanshared: " << dlerror() << std::endl;
+      std::cerr << "Failed to close libleanshared: " << dlerror() << std::endl;
       return r;
     }else{
       // std::cout << "Closed libleanshared.so" << std::endl;
@@ -94,8 +94,8 @@ struct LeanModule{
       module_handle = dlopen(module_path, RTLD_LOCAL | RTLD_NOW);
 
       if (!module_handle) {
-	// std::cout << "Error: Library failed to load!" << std::endl;
-	// std::cout << "Error Message:" << std::endl << dlerror() << std::endl;
+	std::cerr << "Error: Library failed to load!" << std::endl;
+	std::cerr << "Error Message:" << std::endl << dlerror() << std::endl;
 	this->compile_time = 0.0;
 	return 0;
       }
