@@ -35,16 +35,20 @@ namespace Hou
      @[extern "houlean_rw_handle_f"]
      opaque getAttrF (attrib : @& String) (owner : @& AttributeOwner) : Sop RWHandleF
      @[extern "houlean_rw_handle_f_get"]
-     opaque RWHandleF.getOp (self : @& RWHandleF) (idx : @& USize) : Sop Float
+     opaque RWHandleF.get (self : @& RWHandleF) (idx : @& USize) : Sop Float
      @[extern "houlean_rw_handle_f_set"]
      opaque RWHandleF.set (handle : @& RWHandleF) (idx : @& USize) (val : @& Float) : Sop Unit
+
+     instance : GetElem RWHandleF USize (Sop Float) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
 
      @[extern "houlean_rw_handle_v3"]
      opaque getAttrV3 (attrib : @& String) (owner : @& AttributeOwner) : Sop RWHandleV3
      @[extern "houlean_rw_handle_v3_get"]
-     opaque RWHandleV3.getOp (self : @& RWHandleV3) (idx : @& USize) : Sop Vec3
+     opaque RWHandleV3.get (self : @& RWHandleV3) (idx : @& USize) : Sop Vec3
      @[extern "houlean_rw_handle_v3_set"]
      opaque RWHandleV3.set (handle : @& RWHandleV3) (id : @& USize) (val : @& Vec3) : Sop Unit
+
+     instance : GetElem RWHandleV3 USize (Sop Vec3) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
 
 
   end Attributes
