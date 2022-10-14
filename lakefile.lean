@@ -63,7 +63,7 @@ script install (args) do
   let _ ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
-              (← getLeanLibDir) / "lean" / "libleanshared.so" |>.toString,
+              (← getLeanLibDir) / "libleanshared.so" |>.toString,
               "libleanshared.so"]
     cwd := libDir
   }
