@@ -10,7 +10,7 @@
 #+begin_src
   lake script run compileCpp /opt/hfs19.0
   lake build
-  labe script run install ~/houdini19.0
+  lake script run install ~/houdini19.0
 #+end_src
   If necessary, replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.
 

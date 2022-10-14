@@ -3,7 +3,7 @@ project(HouLean)
 # Specify the minimum required version of CMake to build the project.
 cmake_minimum_required( VERSION 3.6 )
 
-set(CMAKE_PREFIX_PATH "${CMAKE_HFS}/toolkit:${HFS}/toolkit")
+set(CMAKE_PREFIX_PATH "${CMAKE_HFS}/toolkit")
 
 ### LIBRARIES ###
 find_package(Houdini REQUIRED)
