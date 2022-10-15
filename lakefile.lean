@@ -6,7 +6,39 @@ package houlean
 @[defaultTarget]
 lean_lib HouLean {
   roots := #[`HouLean]
+  buildType := .release
 }
+
+-- extern_lib HouLeanCApi (pkg : Package) :=
+--   -- a build function that produces its static library
+
+-- lean_lib TestWrangle {
+--   roots := #[`Wrangles.TestWrangle.Main, `HouLean]
+--   buildType := .release
+--   moreLinkArgs := #["-L/home/tomass/Documents/HouLean/build/cpp", "-lHouLeanCApi"]
+-- }
+
+
+open Lean Elab Command in
+/-- This command creates a new target for each directory in `Wrangles/`. 
+
+To build specific wrangle code you most likely want to run `lake build <dir_name>:shared` -/
+def generate_wrangle_targets : CommandElabM Unit := do
+  let dirName := "Wrangles"
+  let dir := (← IO.currentDir) / dirName
+
+  for p in ← dir.readDir do
+    if ← p.path.isDir then
+      let libName := p.path.fileName.get!
+      let name := mkIdent libName
+      let root := Syntax.mkStrLit (dirName ++ "/" ++ libName ++ "/Main.lean" )
+      elabCommand (← 
+        `(lean_lib $name:ident { 
+            roots := #[$root, `HouLean], 
+            buildType := .release, 
+            moreLinkArgs := #["-L./build/cpp", "-lHouLeanCApi"] }))
+    
+#eval generate_wrangle_targets
 
 
 script compileCpp (args) do
@@ -45,6 +77,26 @@ script compileCpp (args) do
 
   return 0
 
+script setHoudiniEnv (args) do
+
+  let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
+  let houdiniEnvFile := houUserPrefDir / "houdini.env"
+
+  let curDir ← IO.currentDir
+  let newEnv := s!"HOULEAN_DIR = {curDir}"
+
+  let _ ← IO.FS.withFile houdiniEnvFile IO.FS.Mode.readWrite λ file => do
+    let lines := (← file.readToEnd).splitOn "\n"
+    let isHouLeanEnvSet? := lines.find? (λ line => line.substrEq 0 newEnv 0 11)
+    match isHouLeanEnvSet? with
+    | some str => 
+      IO.println s!"HouLean environment variable is already set in {houdiniEnvFile}!\n{str}"
+    | none => 
+      file.putStrLn newEnv
+      IO.println s!"Setting HouLean environment variable in {houdiniEnvFile}\n{newEnv}"
+
+  return 0
+  
 
 script install (args) do
 
@@ -72,8 +124,8 @@ script install (args) do
   let _ ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
-              (← IO.currentDir) / "houdini" / "otl" / "sop_tomass.dev.lean.1.0.hda" |>.toString,
-              "sop_tomass.dev.lean.1.0.hda"]
+              (← IO.currentDir) / "houdini" / "otl" / "sop_tomass.dev.lean.2.0.hda" |>.toString,
+              "sop_tomass.dev.lean.2.0.hda"]
     cwd := otlDir
   }
 

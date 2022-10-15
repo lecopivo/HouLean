@@ -34,12 +34,14 @@ void newSopOperator(OP_OperatorTable *table) {
 
 static PRM_Name prm_names[] = {
     PRM_Name("callback_library", "Callback Library"),
+    PRM_Name("library_name", "Library Name"),
     PRM_Name("compile_time", "Compile Time"),
 };
 
 PRM_Template SOP_HouLeanCore::myTemplateList[] = {
     PRM_Template(PRM_FILE, 1, &prm_names[0]),
-    PRM_Template(PRM_FLT, 1, &prm_names[1], PRMzeroDefaults),
+    PRM_Template(PRM_STRING, 1, &prm_names[1]),
+    PRM_Template(PRM_FLT, 1, &prm_names[2], PRMzeroDefaults),
     PRM_Template(),
 };
 
@@ -94,8 +96,9 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
   // std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
   
   // Load external library
-  UT_String callback_library;
+  UT_String callback_library, library_name;
   evalString(callback_library, "callback_library", 0, time);
+  evalString(library_name, "library_name", 0, time);
   double compile_time = evalFloat("compile_time", 0, time);
 
   LeanModule * module;
@@ -105,7 +108,7 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
     module = &modules[currentId];
   }
 
-  if(module->realoadModule(callback_library, compile_time)){
+  if(module->realoadModule(callback_library, library_name, compile_time)){
     module->callMain(time, gdp);
   }
 

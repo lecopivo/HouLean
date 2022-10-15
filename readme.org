@@ -11,6 +11,7 @@
   lake script run compileCpp /opt/hfs19.5
   lake build HouLean:static HouLean:shared
   lake script run install ~/houdini19.5
+  lake script run setHoudiniEnv ~/houdini19.5  
 #+end_src
   If necessary, replace =/opt/hfs19.0= with your Houdini install path and =~/houdini19.0= with Houdini preference directory.
 

@@ -80,7 +80,7 @@ struct LeanModule{
     }
   }
 
-  int realoadModule(const char *module_path, double compile_time) {
+    int realoadModule(const char *module_path, const char *module_name, double compile_time) {
     if(module_handle == nullptr || compile_time != this->compile_time){
       // std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
@@ -105,12 +105,22 @@ struct LeanModule{
       _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "l_run");
       mk_sop_context = (lean_object* (*)(void*))dlsym(module_handle, "mk_sop_context");
 
+      if (!initialize_Main) {
+
+	  std::string initMainName = "initialize_Wrangles_";
+	  initMainName.append(module_name).append("_Main");
+	  
+	  initialize_Main = (lean_object* (*)(lean_object*))dlsym(module_handle, initMainName.c_str());
+      }
+
       if (!lean_initialize_runtime_module ||
 	  !initialize_Main ||
 	  !_lean_main ||
 	  !mk_sop_context){
 
-	// std::cout << "Error Message: " << dlerror() << std::endl;
+	  std::cerr << "Loading module functions failed! module: " << module_path << std::endl;
+	  std::cerr << lean_initialize_runtime_module << " " << initialize_Main << " " << _lean_main  << " " << mk_sop_context << std::endl;
+	  std::cerr << "Error Message: " << dlerror() << std::endl;
 	module_handle = nullptr;
 	this->compile_time = 0.0;
 	return 0;
