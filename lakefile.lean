@@ -9,15 +9,7 @@ lean_lib HouLean {
   buildType := .release
 }
 
--- extern_lib HouLeanCApi (pkg : Package) :=
---   -- a build function that produces its static library
-
--- lean_lib TestWrangle {
---   roots := #[`Wrangles.TestWrangle.Main, `HouLean]
---   buildType := .release
---   moreLinkArgs := #["-L/home/tomass/Documents/HouLean/build/cpp", "-lHouLeanCApi"]
--- }
-
+-- require scilean from git "https://github.com/lecopivo/SciLean" @ "master"
 
 open Lean Elab Command in
 /-- This command creates a new target for each directory in `Wrangles/`. 
@@ -34,8 +26,8 @@ def generate_wrangle_targets : CommandElabM Unit := do
       let root := Syntax.mkStrLit (dirName ++ "/" ++ libName ++ "/Main.lean" )
       elabCommand (← 
         `(lean_lib $name:ident { 
-            roots := #[$root, `HouLean], 
-            buildType := .release, 
+            roots := #[$root,`HouLean]
+            buildType := .release
             moreLinkArgs := #["-L./build/cpp", "-lHouLeanCApi"] }))
     
 #eval generate_wrangle_targets
