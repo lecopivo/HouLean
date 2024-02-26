@@ -3,11 +3,12 @@ open Lake DSL
 
 package houlean
 
-@[defaultTarget]
+@[default_target]
 lean_lib HouLean {
   roots := #[`HouLean]
   buildType := .release
 }
+
 
 -- require scilean from git "https://github.com/lecopivo/SciLean" @ "master"
 
@@ -25,7 +26,7 @@ def generate_wrangle_targets : CommandElabM Unit := do
     if ← p.path.isDir then
       let libName := p.path.fileName.get!
       let name := mkIdent libName
-      let root := Syntax.mkStrLit (dirName ++ "/" ++ libName ++ "/Main.lean" )
+      let root := Syntax.mkStrLit (dirName ++ "/" ++ libName ++ "/Main" )
       elabCommand (← 
         `(lean_lib $name:ident { 
             roots := #[$root,`HouLean]
