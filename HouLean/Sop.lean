@@ -32,6 +32,22 @@ namespace Hou
   @[export houlean_sop_mk_error]
   def Sop.capi.error {α} (msg : String) : Sop α := λ σ => .error (.user_error msg) σ
 
+  @[export houlean_sop_result_is_ok]
+  def Sop.capi.resultIsOk {α} (r : EStateM.Result SopError SopContext α) : Bool := 
+    match r with
+    | .ok .. => true
+    | .error .. => false
+
+  @[export houlean_sop_result_error_msg]
+  def Sop.capi.resultErrorMsg {α} (r : EStateM.Result SopError SopContext α) : String := 
+    match r with
+    | .error (.user_error msg) _ => msg
+    | .error (.missingValue) _ => "missing value"
+    | _ => ""
+
+  @[export houlean_sop_throw_error]
+  def Sop.capi.throwErrror {α} (msg : String) : Sop α := fun s => .error (.user_error msg) s
+
   @[extern "houlean_print"]
   opaque print (msg : @& String) : Sop Unit
 
