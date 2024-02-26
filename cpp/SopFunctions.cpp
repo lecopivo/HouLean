@@ -52,8 +52,9 @@ extern "C" lean_object *houlean_rw_handle_f(b_lean_obj_arg _attr, uint8_t _owner
   if(handle->isValid()){
     return houlean_sop_mk_value(nullptr, houlean_external_to_lean(handle), context);
   }else{
-    std::cout << "Invalid attribute " << attr << std::endl;
-    return houlean_sop_mk_error(nullptr, lean_mk_string("Invalid attribute"), context);
+    std::stringstream ss;
+    ss << "Invalid attribute " << attr << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
   }
 }
 
@@ -95,8 +96,9 @@ extern "C" lean_object *houlean_rw_handle_v3(b_lean_obj_arg _attr, uint8_t _owne
   if(handle->isValid()){
     return houlean_sop_mk_value(nullptr, houlean_external_to_lean(handle), context);
   }else{
-    std::cout << "Invalid attribute " << attr << std::endl;
-    return houlean_sop_mk_error(nullptr, lean_mk_string("Invalid attribute"), context);
+    std::stringstream ss;
+    ss << "Invalid attribute " << attr << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
   }
 }
 

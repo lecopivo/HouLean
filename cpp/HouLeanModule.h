@@ -13,6 +13,7 @@
 
 #include <filesystem>
 
+// #include "SopCApi.h"
 #include "SopContext.h"
 
 // TODO: split to *.h and *.cpp file
@@ -71,8 +72,10 @@ struct LeanModule{
   
   lean_object* (*initialize_Main)(lean_object*);
   lean_object* (*_lean_main)(lean_object*);
-  void (*lean_initialize_runtime_module)();
+  void         (*lean_initialize_runtime_module)();
   lean_object* (*mk_sop_context)(void*);
+  uint8_t      (*houlean_sop_result_is_ok)(lean_object*, lean_object*);
+  lean_object* (*houlean_sop_result_error_msg)(lean_object*, lean_object*);
 
   ~LeanModule(){
     if(module_handle != nullptr){
@@ -80,7 +83,7 @@ struct LeanModule{
     }
   }
 
-    int realoadModule(const char *module_path, const char *module_name, double compile_time) {
+    int realoadModule(const char *module_path, const char *module_name, double compile_time, std::string& err) {
     if(module_handle == nullptr || compile_time != this->compile_time){
       // std::cout << "Reloading Lean Module!" << std::endl;
       // close all existing libraries
@@ -94,8 +97,10 @@ struct LeanModule{
       module_handle = dlopen(module_path, RTLD_LOCAL | RTLD_NOW);
 
       if (!module_handle) {
-	std::cerr << "Error: Library failed to load!" << std::endl;
-	std::cerr << "Error Message:" << std::endl << dlerror() << std::endl;
+        std::stringstream ss;
+        ss << "Error: Library failed to load!" << std::endl;
+        ss << "Error Message:" << std::endl << dlerror() << std::endl;
+        err = ss.str();
 	this->compile_time = 0.0;
 	return 0;
       }
@@ -104,7 +109,9 @@ struct LeanModule{
       initialize_Main = (lean_object* (*)(lean_object*))dlsym(module_handle, "initialize_Main");
       _lean_main = (lean_object* (*)(lean_object*))dlsym(module_handle, "l_run");
       mk_sop_context = (lean_object* (*)(void*))dlsym(module_handle, "mk_sop_context");
-
+      houlean_sop_result_is_ok = (uint8_t (*)(lean_object*, lean_object*))dlsym(module_handle, "houlean_sop_result_is_ok");
+      houlean_sop_result_error_msg = (lean_object* (*)(lean_object*, lean_object*))dlsym(module_handle, "houlean_sop_result_error_msg");
+      
       if (!initialize_Main) {
 
 	  std::string initMainName = "initialize_Wrangles_";
@@ -116,11 +123,14 @@ struct LeanModule{
       if (!lean_initialize_runtime_module ||
 	  !initialize_Main ||
 	  !_lean_main ||
-	  !mk_sop_context){
+	  !mk_sop_context ||
+          !houlean_sop_result_is_ok ||
+          !houlean_sop_result_error_msg){
 
-	  std::cerr << "Loading module functions failed! module: " << module_path << std::endl;
-	  std::cerr << lean_initialize_runtime_module << " " << initialize_Main << " " << _lean_main  << " " << mk_sop_context << std::endl;
-	  std::cerr << "Error Message: " << dlerror() << std::endl;
+        std::stringstream ss;
+        ss << "Loading module functions failed! module: " << module_path << std::endl;
+        ss << "Error Message: " << dlerror() << std::endl;
+        err = ss.str();
 	module_handle = nullptr;
 	this->compile_time = 0.0;
 	return 0;
@@ -145,7 +155,7 @@ struct LeanModule{
     return 1;
   }
 
-  void callMain(double time, GU_Detail * geo){
+  int callMain(double time, GU_Detail * geo, std::string& err){
     if(module_handle && _lean_main){
 
       // std::cout << "Running main" << std::endl;
@@ -157,10 +167,24 @@ struct LeanModule{
       sopContext->geo = geo;
       sopContext->ref_geo.push_back(geo);
       
-      _lean_main(mk_sop_context((void*)sopContext));
-      
+      auto result = _lean_main(mk_sop_context((void*)sopContext));
+
+      lean_inc(result);
+      if (!houlean_sop_result_is_ok(nullptr, result)){
+        auto msg = houlean_sop_result_error_msg(nullptr,result);
+        char const* m = lean_string_cstr(msg);
+        err = m;
+        lean_dec(msg);
+        return 0;
+      }
+
+      return 1;
       // this causes crash upon recompilation and realod of lean library
       // lean_dec_ref(res);
+    } else {
+
+      err = "lean code not correctly initialize";
+      return 0;
     }
   }
 

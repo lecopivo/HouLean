@@ -45,9 +45,6 @@ namespace Hou
     | .error (.missingValue) _ => "missing value"
     | _ => ""
 
-  @[export houlean_sop_throw_error]
-  def Sop.capi.throwErrror {α} (msg : String) : Sop α := fun s => .error (.user_error msg) s
-
   @[extern "houlean_print"]
   opaque print (msg : @& String) : Sop Unit
 

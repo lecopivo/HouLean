@@ -112,8 +112,14 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
     module = &modules[currentId];
   }
 
-  if(module->realoadModule(callback_library, library_name, compile_time)){
-    module->callMain(time, gdp);
+  std::string err = "";
+  if(module->realoadModule(callback_library, library_name, compile_time, err)){
+    auto ok = module->callMain(time, gdp,err);
+    if (!ok) {
+      addError(SOP_MESSAGE, err.c_str());
+    }
+  } else {
+    addError(SOP_MESSAGE, err.c_str());
   }
 
   if (error() >= UT_ERROR_ABORT)
