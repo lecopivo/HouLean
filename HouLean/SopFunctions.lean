@@ -1,3 +1,4 @@
+
 import HouLean.Sop
 
 namespace Hou
@@ -52,5 +53,27 @@ namespace Hou
 
 
   end Attributes
+
+
+
+  section DistanceQueries
+
+     opaque GURayIntersect.nonempty : NonemptyType
+     def GURayIntersect : Type := GURayIntersect.nonempty.type
+     instance : Nonempty GURayIntersect := GURayIntersect.nonempty.property
+
+     @[extern "houlean_sop_get_gu_ray_intersect"]
+     opaque getGURayIntersect' (geoId : USize) : Sop GURayIntersect 
+
+     def getGURayIntersect (geoId : Nat) : Sop GURayIntersect :=
+       getGURayIntersect' geoId.toUSize
+
+     @[extern "houlean_sop_gu_ray_intersect_dist"]
+     opaque GURayIntersect.dist (ri : @& GURayIntersect) (x : @& Vec3) : Float
+
+     @[extern "houlean_sop_gu_ray_intersect_closest_point"]
+     opaque GURayIntersect.closestPoint (ri : @& GURayIntersect) (x : @& Vec3) : Vec3
+
+  end DistanceQueries
 
 end Hou

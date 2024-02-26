@@ -2,6 +2,7 @@
 
 #include <GA/GA_Handle.h>
 #include <GA/GA_Types.h>
+#include <GU/GU_RayIntersect.h>
 
 #include <lean/lean.h>
 
@@ -123,4 +124,64 @@ extern "C" lean_object* houlean_rw_handle_v3_set(b_lean_obj_arg _handle, size_t 
   handle->set(ctx->geo->pointOffset(idx), {x,y,z});
 
   return houlean_sop_mk_unit(context);
+}
+
+
+extern "C" lean_object* houlean_sop_get_gu_ray_intersect(size_t geoId, lean_object* context){
+
+  auto ctx = houlean_lean_to_external<SopContext>(context);
+
+  if (geoId >= ctx->ref_geo.size() || ctx->ref_geo[geoId] == nullptr){
+    std::stringstream ss;
+    ss << "Invalid input geometry " << geoId << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+
+  auto geo = ctx->ref_geo[geoId];
+
+  auto ri = new GU_RayIntersect(geo);
+ 
+  if(ri != nullptr){
+    return houlean_sop_mk_value(nullptr, houlean_external_to_lean(ri), context);
+  }else{
+    std::stringstream ss;
+    ss << "faild building GURayIntersect";
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+}
+
+
+
+extern "C" double houlean_sop_gu_ray_intersect_dist(b_lean_obj_arg _ri, b_lean_obj_arg vec){
+
+  auto ri = houlean_lean_to_external<GU_RayIntersect>(_ri);
+
+  float x = houlean_vec3_x(vec);
+  float y = houlean_vec3_y(vec);
+  float z = houlean_vec3_z(vec);
+
+  GU_MinInfo minInfo; //(1E18F, 1e-14F,10);
+  ri->minimumPoint({x,y,z}, minInfo);
+
+  return sqrt(minInfo.d);
+}
+
+
+extern "C" lean_object* houlean_sop_gu_ray_intersect_closest_point(b_lean_obj_arg _ri, b_lean_obj_arg vec){
+
+  auto ri = houlean_lean_to_external<GU_RayIntersect>(_ri);
+
+  float x = houlean_vec3_x(vec);
+  float y = houlean_vec3_y(vec);
+  float z = houlean_vec3_z(vec);
+  
+  GU_MinInfo minInfo; //(1E18F, 1e-14F,10);
+  ri->minimumPoint({x,y,z}, minInfo);
+
+  UT_Vector4 pos = {0,0,0,0};
+  minInfo.prim->evaluateInteriorPoint(pos,minInfo.u1,minInfo.v1);
+
+  pos.dehomogenize();
+  return houlean_vec3_mk(pos.x(), pos.y(), pos.z());
+  // return houlean_vec3_mk(x,y,z);
 }

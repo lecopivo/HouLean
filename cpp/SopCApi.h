@@ -16,6 +16,19 @@ extern "C" uint8_t houlean_attr_owner_is_vertex(uint8_t);
 extern "C" uint8_t houlean_attr_owner_is_primitive(uint8_t);
 extern "C" uint8_t houlean_attr_owner_is_detail(uint8_t);
 
-extern "C" double houlean_vec3_x(lean_object*);
-extern "C" double houlean_vec3_y(lean_object*);
-extern "C" double houlean_vec3_z(lean_object*);
+extern "C" lean_object* houlean_vec3_mk(double x_1, double x_2, double x_3);
+inline double houlean_vec3_x(lean_object* x_1){
+  double x_2; 
+  x_2 = lean_ctor_get_float(x_1, 0);
+  return x_2;
+}
+inline double houlean_vec3_y(lean_object* x_1){
+  double x_2; 
+  x_2 = lean_ctor_get_float(x_1, 8);
+  return x_2;
+}  
+inline double houlean_vec3_z(lean_object* x_1){
+  double x_2; 
+  x_2 = lean_ctor_get_float(x_1, 16);
+  return x_2;
+}

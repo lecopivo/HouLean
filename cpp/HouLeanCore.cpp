@@ -85,19 +85,8 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
 
   int currentId = this->getUniqueId();
 
-  // houLeanContext.outGeo = gdp;
-  // for(int i=0;i<4;i++){
-  //   houLeanContext.inGeo[i] = inputGeo(i);
-  // }
-
   flags().setTimeDep(true);
   fpreal time = context.getTime();
-
-  // houLeanContext.time = time;
-
-  // std::cout << "User preference directory is: " <<   << std::endl;
-
-  // std::cout << "Node unique id: " << this->getUniqueId() << std::endl;
   
   // Load external library
   UT_String callback_library, library_name;
@@ -114,7 +103,9 @@ SOP_HouLeanCore::cookMySop(OP_Context &context) {
 
   std::string err = "";
   if(module->realoadModule(callback_library, library_name, compile_time, err)){
-    auto ok = module->callMain(time, gdp,err);
+    std::vector<GU_Detail const*> inputs =
+      {this->inputGeo(0),this->inputGeo(1),this->inputGeo(2),this->inputGeo(3)};
+    auto ok = module->callMain(time, gdp, inputs, err);
     if (!ok) {
       addError(SOP_MESSAGE, err.c_str());
     }

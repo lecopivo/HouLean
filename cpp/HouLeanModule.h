@@ -155,7 +155,7 @@ struct LeanModule{
     return 1;
   }
 
-  int callMain(double time, GU_Detail * geo, std::string& err){
+    int callMain(double time, GU_Detail * geo, std::vector<GU_Detail const*> inputs, std::string& err){
     if(module_handle && _lean_main){
 
       // std::cout << "Running main" << std::endl;
@@ -165,7 +165,7 @@ struct LeanModule{
       auto sopContext = new SopContext;
       sopContext->time = time;
       sopContext->geo = geo;
-      sopContext->ref_geo.push_back(geo);
+      sopContext->ref_geo = inputs;
       
       auto result = _lean_main(mk_sop_context((void*)sopContext));
 
