@@ -23,7 +23,7 @@ houdini_configure_target(libHouLeanCore)
 ### Houdini -> Lean C API ###
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(HouLeanCApi STATIC SopFunctions.cpp)
+add_library(HouLeanCApi STATIC SopFunctions.cpp HouFunctions.cpp Util.cpp)
 
 target_include_directories(HouLeanCApi PUBLIC "${CMAKE_LEAN_SYSROOT}/include")
 target_include_directories(HouLeanCApi PUBLIC "${HFS}/toolkit/include")

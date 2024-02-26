@@ -16,6 +16,8 @@ open Lean Elab Command in
 
 To build specific wrangle code you most likely want to run `lake build <dir_name>:shared` -/
 def generate_wrangle_targets : CommandElabM Unit := do
+  -- Directory Wrangles might not exist! Do not fail compilation
+  
   let dirName := "Wrangles"
   let dir := (← IO.currentDir) / dirName
 
@@ -111,6 +113,8 @@ script install (args) do
               "libleanshared.so"]
     cwd := libDir
   }
+
+  -- TODO: ensruse that folder: houUserPrefDir / "otl" exists!
 
   -- link otl
   let _ ← IO.Process.run {
