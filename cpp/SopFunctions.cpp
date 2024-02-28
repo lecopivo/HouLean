@@ -77,6 +77,33 @@ extern "C" lean_object* houlean_rw_handle_f_set(b_lean_obj_arg _handle, size_t i
   return houlean_sop_mk_unit(context);
 }
 
+extern "C" lean_object* houlean_rw_handle_f_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+
+  auto ctx    = houlean_lean_to_external<SopContext>(context);
+  auto handle = houlean_lean_to_external<GA_RWHandleF>(_handle);
+  
+  auto owner  = handle->getAttribute()->getOwner();
+  
+  auto primoff = ctx->geo->primitiveOffset(primIdx);          
+  const GEO_Primitive *prim = ctx->geo->getGEOPrimitive(primoff);
+  
+  UT_Array<GA_Offset> offsetArray;
+  UT_FloatArray weightArray;
+  prim->computeInteriorPointWeights(offsetArray, weightArray, u, v, w);
+  
+  float result = 0;
+  for (exint i = 0; i < offsetArray.size(); ++i){
+    GA_Offset offset = offsetArray(i);
+    if (owner == GA_ATTRIB_POINT){
+       offset = ctx->geo->vertexPoint(offset);
+    }
+    result += weightArray(i) * handle->get(offset);
+  }
+
+  return houlean_sop_mk_float(result, context);
+}
+
+
 extern "C" lean_object *houlean_rw_handle_v3(b_lean_obj_arg _attr, uint8_t _owner, lean_object* context){
 
   auto attr = lean_string_cstr(_attr);
@@ -124,6 +151,32 @@ extern "C" lean_object* houlean_rw_handle_v3_set(b_lean_obj_arg _handle, size_t 
   handle->set(ctx->geo->pointOffset(idx), {x,y,z});
 
   return houlean_sop_mk_unit(context);
+}
+
+extern "C" lean_object* houlean_rw_handle_v3_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+
+  auto ctx    = houlean_lean_to_external<SopContext>(context);
+  auto handle = houlean_lean_to_external<GA_RWHandleV3>(_handle);
+  
+  auto owner  = handle->getAttribute()->getOwner();
+  
+  auto primoff = ctx->geo->primitiveOffset(primIdx);          
+  const GEO_Primitive *prim = ctx->geo->getGEOPrimitive(primoff);
+  
+  UT_Array<GA_Offset> offsetArray;
+  UT_FloatArray weightArray;
+  prim->computeInteriorPointWeights(offsetArray, weightArray, u, v, w);
+  
+  UT_Vector3F result = {0,0,0};
+  for (exint i = 0; i < offsetArray.size(); ++i){
+    GA_Offset offset = offsetArray(i);
+    if (owner == GA_ATTRIB_POINT){
+       offset = ctx->geo->vertexPoint(offset);
+    }
+    result += weightArray(i) * handle->get(offset);
+  }
+
+  return houlean_sop_mk_vec3(result.x(), result.y(), result.z(), context);
 }
 
 
@@ -183,5 +236,26 @@ extern "C" lean_object* houlean_sop_gu_ray_intersect_closest_point(b_lean_obj_ar
 
   pos.dehomogenize();
   return houlean_vec3_mk(pos.x(), pos.y(), pos.z());
-  // return houlean_vec3_mk(x,y,z);
+}
+
+
+extern "C" lean_object* houlean_sop_gu_ray_intersect_closest_surface_point(b_lean_obj_arg _ri, b_lean_obj_arg vec){
+
+  auto ri = houlean_lean_to_external<GU_RayIntersect>(_ri);
+
+  float x = houlean_vec3_x(vec);
+  float y = houlean_vec3_y(vec);
+  float z = houlean_vec3_z(vec);
+  
+  GU_MinInfo minInfo;
+  ri->minimumPoint({x,y,z}, minInfo);
+
+  size_t primIdx = minInfo.prim->getMapIndex();
+
+  lean_object * p = lean_alloc_ctor(0, 0, sizeof(size_t)*1 + 24);
+  lean_ctor_set_usize(p, 0, primIdx);
+  lean_ctor_set_float(p, sizeof(void*)*1, minInfo.u1);
+  lean_ctor_set_float(p, sizeof(void*)*1 + 8, minInfo.v1);
+  lean_ctor_set_float(p, sizeof(void*)*1 + 16, minInfo.w1);
+  return p;
 }
