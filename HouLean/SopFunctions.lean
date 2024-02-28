@@ -29,6 +29,14 @@ namespace Hou
      def RWHandleV3 : Type := RWHandleV3.nonempty.type
      instance : Nonempty RWHandleV3 := RWHandleV3.nonempty.property
 
+     opaque ROHandleF.nonempty : NonemptyType
+     def ROHandleF : Type := ROHandleF.nonempty.type
+     instance : Nonempty ROHandleF := ROHandleF.nonempty.property
+
+     opaque ROHandleV3.nonempty : NonemptyType
+     def ROHandleV3 : Type := ROHandleV3.nonempty.type
+     instance : Nonempty ROHandleV3 := ROHandleV3.nonempty.property
+
      @[unbox]
      inductive AttributeOwner | point | vertex | primitive | detail
 
@@ -48,9 +56,14 @@ namespace Hou
      @[extern "houlean_rw_handle_f_set"]
      opaque RWHandleF.set (handle : @& RWHandleF) (idx : @& USize) (val : @& Float) : Sop Unit
 
-     @[extern "houlean_rw_handle_f_surface_get"]
-     private opaque RWHandleF.surfaceGet' (self : @& RWHandleF) (primIdx : USize) (u v w : Float)  : Sop Float
-     def RWHandleF.surfaceGet (self : @& RWHandleF) (p : SurfacePoint) : Sop Float :=
+     @[extern "houlean_ro_handle_f"]
+     opaque getROAttrF (geo : USize) (attrib : @& String) (owner : @& AttributeOwner) : Sop ROHandleF
+     @[extern "houlean_ro_handle_f_get"]
+     opaque ROHandleF.get (self : @& ROHandleF) (idx : @& USize) : Sop Floatx
+
+     @[extern "houlean_ro_handle_f_surface_get"]
+     private opaque ROHandleF.surfaceGet' (self : @& ROHandleF) (primIdx : USize) (u v w : Float)  : Sop Float
+     def RWHandleF.surfaceGet (self : @& ROHandleF) (p : SurfacePoint) : Sop Float :=
        self.surfaceGet' p.primIdxUSize p.u p.v p.w
 
      instance : GetElem RWHandleF USize (Sop Float) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
@@ -62,9 +75,14 @@ namespace Hou
      @[extern "houlean_rw_handle_v3_set"]
      opaque RWHandleV3.set (handle : @& RWHandleV3) (id : @& USize) (val : @& Vec3) : Sop Unit
 
-     @[extern "houlean_rw_handle_v3_surface_get"]
-     private opaque RWHandleV3.surfaceGet' (self : @& RWHandleV3) (primIdx : USize) (u v w : Float) : Sop Vec3
-     def RWHandleV3.surfaceGet (self : @& RWHandleV3) (p : SurfacePoint) : Sop Vec3 :=
+     @[extern "houlean_ro_handle_v3"]
+     opaque getROAttrV3 (geo : USize) (attrib : @& String) (owner : @& AttributeOwner) : Sop ROHandleV3
+     @[extern "houlean_ro_handle_v3_get"]
+     opaque ROHandleV3.get (self : @& ROHandleV3) (idx : @& USize) : Sop Vec3
+
+     @[extern "houlean_ro_handle_v3_surface_get"]
+     private opaque ROHandleV3.surfaceGet' (self : @& ROHandleV3) (primIdx : USize) (u v w : Float) : Sop Vec3
+     def ROHandleV3.surfaceGet (self : @& ROHandleV3) (p : SurfacePoint) : Sop Vec3 :=
        self.surfaceGet' p.primIdxUSize p.u p.v p.w
 
      instance : GetElem RWHandleV3 USize (Sop Vec3) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
@@ -91,8 +109,8 @@ namespace Hou
      @[extern "houlean_sop_gu_ray_intersect_closest_point"]
      opaque GURayIntersect.closestPoint (ri : @& GURayIntersect) (x : @& Vec3) : Vec3
 
-     @[extern "houlean_sop_gu_ray_intersect_closest_point_surface_point"]
-     opaque GURayIntersect.closestPointUV (ri : @& GURayIntersect) (x : @& Vec3) : SurfacePoint
+     @[extern "houlean_sop_gu_ray_intersect_closest_surface_point"]
+     opaque GURayIntersect.closestSurfacePoint (ri : @& GURayIntersect) (x : @& Vec3) : SurfacePoint
 
 
   end DistanceQueries

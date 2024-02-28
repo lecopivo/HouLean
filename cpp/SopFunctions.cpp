@@ -77,25 +77,68 @@ extern "C" lean_object* houlean_rw_handle_f_set(b_lean_obj_arg _handle, size_t i
   return houlean_sop_mk_unit(context);
 }
 
-extern "C" lean_object* houlean_rw_handle_f_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+extern "C" lean_object *houlean_ro_handle_f(size_t geoId, b_lean_obj_arg _attr, uint8_t _owner, lean_object* context){
+
+  auto attr = lean_string_cstr(_attr);
+  auto owner = GA_ATTRIB_INVALID;
+  if(houlean_attr_owner_is_detail(_owner))
+    owner = GA_ATTRIB_DETAIL;
+  if(houlean_attr_owner_is_point(_owner))
+    owner = GA_ATTRIB_POINT;
+  if(houlean_attr_owner_is_vertex(_owner))
+    owner = GA_ATTRIB_VERTEX;
+  if(houlean_attr_owner_is_primitive(_owner))
+    owner = GA_ATTRIB_PRIMITIVE;
+
+  auto ctx = houlean_lean_to_external<SopContext>(context);
+  if (geoId >= ctx->ref_geo.size() || ctx->ref_geo[geoId] == nullptr){
+    std::stringstream ss;
+    ss << "Invalid input geometry " << geoId << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+  auto geo = ctx->ref_geo[geoId];
+  auto handle = new GA_ROHandleF(geo, owner, attr);
+
+  // houlean_sop
+  if(handle->isValid()){
+    return houlean_sop_mk_value(nullptr, houlean_external_to_lean(handle), context);
+  }else{
+    std::stringstream ss;
+    ss << "Invalid attribute " << attr << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+}
+
+extern "C" lean_object* houlean_ro_handle_f_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
 
   auto ctx    = houlean_lean_to_external<SopContext>(context);
-  auto handle = houlean_lean_to_external<GA_RWHandleF>(_handle);
+  auto handle = houlean_lean_to_external<GA_ROHandleF>(_handle);
+
+  return houlean_sop_mk_float(handle->get(ctx->geo->pointOffset(idx)), context);
+}
+
+
+extern "C" lean_object* houlean_ro_handle_f_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+
+  // auto ctx    = houlean_lean_to_external<SopContext>(context);
+  auto handle = houlean_lean_to_external<GA_ROHandleF>(_handle);
   
   auto owner  = handle->getAttribute()->getOwner();
+
+  const GA_Detail & geo = handle->getAttribute()->getDetail();
   
-  auto primoff = ctx->geo->primitiveOffset(primIdx);          
-  const GEO_Primitive *prim = ctx->geo->getGEOPrimitive(primoff);
+  // todo: check GAisValid(primIdx)
+  auto prim = reinterpret_cast<const GEO_Primitive*>(geo.getPrimitiveByIndex(primIdx));
   
   UT_Array<GA_Offset> offsetArray;
   UT_FloatArray weightArray;
   prim->computeInteriorPointWeights(offsetArray, weightArray, u, v, w);
-  
+   
   float result = 0;
   for (exint i = 0; i < offsetArray.size(); ++i){
     GA_Offset offset = offsetArray(i);
     if (owner == GA_ATTRIB_POINT){
-       offset = ctx->geo->vertexPoint(offset);
+       offset = geo.vertexPoint(offset);
     }
     result += weightArray(i) * handle->get(offset);
   }
@@ -153,15 +196,59 @@ extern "C" lean_object* houlean_rw_handle_v3_set(b_lean_obj_arg _handle, size_t 
   return houlean_sop_mk_unit(context);
 }
 
-extern "C" lean_object* houlean_rw_handle_v3_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+extern "C" lean_object *houlean_ro_handle_v3(size_t geoId, b_lean_obj_arg _attr, uint8_t _owner, lean_object* context){
+
+  auto attr = lean_string_cstr(_attr);
+  auto owner = GA_ATTRIB_INVALID;
+  if(houlean_attr_owner_is_detail(_owner))
+    owner = GA_ATTRIB_DETAIL;
+  if(houlean_attr_owner_is_point(_owner))
+    owner = GA_ATTRIB_POINT;
+  if(houlean_attr_owner_is_vertex(_owner))
+    owner = GA_ATTRIB_VERTEX;
+  if(houlean_attr_owner_is_primitive(_owner))
+    owner = GA_ATTRIB_PRIMITIVE;
+
+  auto ctx = houlean_lean_to_external<SopContext>(context);
+  if (geoId >= ctx->ref_geo.size() || ctx->ref_geo[geoId] == nullptr){
+    std::stringstream ss;
+    ss << "Invalid input geometry " << geoId << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+  auto geo = ctx->ref_geo[geoId];
+  auto handle = new GA_ROHandleV3(geo, owner, attr);
+
+  // houlean_sop
+  if(handle->isValid()){
+    return houlean_sop_mk_value(nullptr, houlean_external_to_lean(handle), context);
+  }else{
+    std::stringstream ss;
+    ss << "Invalid attribute " << attr << std::endl;
+    return houlean_sop_mk_error(nullptr, lean_mk_string(ss.str().c_str()), context);
+  }
+}
+
+extern "C" lean_object* houlean_ro_handle_v3_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
 
   auto ctx    = houlean_lean_to_external<SopContext>(context);
-  auto handle = houlean_lean_to_external<GA_RWHandleV3>(_handle);
+  auto handle = houlean_lean_to_external<GA_ROHandleV3>(_handle);
+
+  auto vec = handle->get(ctx->geo->pointOffset(idx));
+
+  return houlean_sop_mk_vec3(vec.x(), vec.y(), vec.z(), context);
+}
+
+extern "C" lean_object* houlean_ro_handle_v3_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+
+  // auto ctx    = houlean_lean_to_external<SopContext>(context);
+  auto handle = houlean_lean_to_external<GA_ROHandleV3>(_handle);
   
   auto owner  = handle->getAttribute()->getOwner();
+
+  const GA_Detail & geo = handle->getAttribute()->getDetail();
   
-  auto primoff = ctx->geo->primitiveOffset(primIdx);          
-  const GEO_Primitive *prim = ctx->geo->getGEOPrimitive(primoff);
+  // todo: check GAisValid(primIdx)
+  auto prim = reinterpret_cast<const GEO_Primitive*>(geo.getPrimitiveByIndex(primIdx));
   
   UT_Array<GA_Offset> offsetArray;
   UT_FloatArray weightArray;
@@ -171,7 +258,7 @@ extern "C" lean_object* houlean_rw_handle_v3_surface_get(b_lean_obj_arg _handle,
   for (exint i = 0; i < offsetArray.size(); ++i){
     GA_Offset offset = offsetArray(i);
     if (owner == GA_ATTRIB_POINT){
-       offset = ctx->geo->vertexPoint(offset);
+       offset = geo.vertexPoint(offset);
     }
     result += weightArray(i) * handle->get(offset);
   }
@@ -252,10 +339,10 @@ extern "C" lean_object* houlean_sop_gu_ray_intersect_closest_surface_point(b_lea
 
   size_t primIdx = minInfo.prim->getMapIndex();
 
-  lean_object * p = lean_alloc_ctor(0, 0, sizeof(size_t)*1 + 24);
+  lean_object * p = lean_alloc_ctor(0, 0, sizeof(size_t)*1 + sizeof(double)*3);
   lean_ctor_set_usize(p, 0, primIdx);
-  lean_ctor_set_float(p, sizeof(void*)*1, minInfo.u1);
-  lean_ctor_set_float(p, sizeof(void*)*1 + 8, minInfo.v1);
-  lean_ctor_set_float(p, sizeof(void*)*1 + 16, minInfo.w1);
+  lean_ctor_set_float(p, sizeof(void*)*1, (double)minInfo.u1);
+  lean_ctor_set_float(p, sizeof(void*)*1 + sizeof(double), (double)minInfo.v1);
+  lean_ctor_set_float(p, sizeof(void*)*1 + sizeof(double)*2, (double)minInfo.w1);
   return p;
 }
