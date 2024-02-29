@@ -148,7 +148,7 @@ run_lean_command( CMD_Args &args )
             std::cerr << dlerror() << std::endl;
         } else {
 
-            auto lean_initialize_runtime_module = (void (*)())dlsym(lean_lib_handle, "lean_initialize_runtime_module");
+            auto lean_initialize_runtime_module = (void (*)())dlsym(lib_handles[0], "lean_initialize_runtime_module");
             auto main = (lean_object* (*)(lean_object*, lean_object*))dlsym(module_handle, "run");
 
             UT_String init_name = lib_name;

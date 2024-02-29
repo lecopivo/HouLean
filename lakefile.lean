@@ -25,13 +25,13 @@ def depPckgs : Array (String × String) :=
     ("std", "Std")]
 
 
-def depPckgsLinkerFlags := 
-    depPckgs 
-      |>.map (fun (dir,name) => #[s!"-L.lake/packages/{dir}/.lake/build/lib", s!"-l{name}"])
-      |>.foldl (init:=#[]) (·++·)
-      |>.push "-lLake"
-      |>.push "-L./build/cpp"
-      |>.push "-lHouLeanCApi"
+def depPckgsLinkerFlags := #["-L./build/cpp", "-lHouLeanCApi"]
+    -- depPckgs 
+    --   |>.map (fun (dir,name) => #[s!"-L.lake/packages/{dir}/.lake/build/lib", s!"-l{name}"])
+    --   |>.foldl (init:=#[]) (·++·)
+    --   |>.push "-lLake"
+    --   |>.push "-L./build/cpp"
+    --   |>.push "-lHouLeanCApi"
 
 open Lean Elab Command in
 /-- This command creates a new target for each directory in `Wrangles/`. 
@@ -48,6 +48,7 @@ def generate_wrangle_targets : CommandElabM Unit := do
       let libName := p.path.fileName.get!
       let name := mkIdent libName
       let root := Syntax.mkStrLit (dirName ++ "/" ++ libName ++ "/Main" )
+      IO.println s!"found wrangle {libName}"
       elabCommand (← 
         `(lean_lib $name:ident { 
             roots := #[$root,`HouLean]
@@ -129,6 +130,7 @@ script install (args) do
   }
   
   -- link Lib
+  -- link libleanshared
   let _ ← IO.Process.run {
     cmd := "ln"
     args := #["-sf", 
@@ -136,6 +138,15 @@ script install (args) do
               "libleanshared.so"]
     cwd := libDir
   }
+  -- link libLake
+  let _ ← IO.Process.run {
+    cmd := "ln"
+    args := #["-sf", 
+              (← IO.currentDir) / "build" / "libLake.so" |>.toString,
+              "libLake.so"]
+    cwd := libDir
+  }
+  -- link all dependencies
   for (dir,name) in depPckgs do
     let _ ← IO.Process.run {
       cmd := "ln"

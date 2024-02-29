@@ -76,7 +76,7 @@
   {"url": "https://github.com/lecopivo/SciLean",
    "type": "git",
    "subDir": null,
-   "rev": "023ec63ca756676b14dfc2f65653a145bdb34bb3",
+   "rev": "17f8a2937f8b5b63afe32f490668452198adb952",
    "name": "scilean",
    "manifestFile": "lake-manifest.json",
    "inputRev": "v4.6-bump",

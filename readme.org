@@ -9,7 +9,9 @@
   To build =HouLean= run these commands:
 #+begin_src
   lake script run compileCpp /opt/hfs19.5
-  lake build HouLean:static HouLean:shared
+  lake build Aesop:shared Cli:shared ImportGraph:shared LeanColls:shared Mathlib:shared ProofWidgets:shared Qq:shared SciLean:shared Std:shared
+  g++ -shared -o build/libLake.so -Wl,--whole-archive -fvisibility=default $HOME/.elan/toolchains/leanprover--lean4---v4.6.0-rc1/lib/lean/libLake.a -Wl,--no-whole-archive
+  lake build
   lake script run install ~/houdini19.5
   lake script run setHoudiniEnv ~/houdini19.5  
 #+end_src
@@ -23,15 +25,5 @@
 TODO: explain these steps
 #+begin_src
 lake build Aesop:shared Cli:shared ImportGraph:shared LeanColls:shared Mathlib:shared ProofWidgets:shared Qq:shared SciLean:shared Std:shared
-export LD_LIBRARY_PATH=$(pwd)/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.elan/toolchains/leanprover--lean4---v4.6.0-rc1/lib/lean/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/aesop/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/Cli/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/importGraph/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/leancolls/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/mathlib/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/proofwidgets/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/Qq/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/scilean/.lake/build/lib/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$(pwd)/.lake/packages/std/.lake/build/lib/
+g++ -shared -o build/libLake.so -Wl,--whole-archive -fvisibility=default $HOME/.elan/toolchains/leanprover--lean4---v4.6.0-rc1/lib/lean/libLake.a -Wl,--no-whole-archive
 #+end_src
