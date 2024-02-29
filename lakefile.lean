@@ -10,7 +10,28 @@ lean_lib HouLean {
 }
 
 
--- require scilean from git "https://github.com/lecopivo/SciLean" @ "master"
+require scilean from git "https://github.com/lecopivo/SciLean" @ "v4.6-bump"
+
+-- can I get this automatically with lake somehow? 
+def depPckgs : Array (String × String) := 
+  #[("aesop", "Aesop"),
+    ("Cli", "Cli"),
+    ("importGraph", "ImportGraph"),
+    ("leancolls", "LeanColls"),
+    ("mathlib", "Mathlib"),
+    ("proofwidgets", "ProofWidgets"),
+    ("Qq", "Qq"),
+    ("scilean", "SciLean"),
+    ("std", "Std")]
+
+
+def depPckgsLinkerFlags := 
+    depPckgs 
+      |>.map (fun (dir,name) => #[s!"-L.lake/packages/{dir}/.lake/build/lib", s!"-l{name}"])
+      |>.foldl (init:=#[]) (·++·)
+      |>.push "-lLake"
+      |>.push "-L./build/cpp"
+      |>.push "-lHouLeanCApi"
 
 open Lean Elab Command in
 /-- This command creates a new target for each directory in `Wrangles/`. 
@@ -30,8 +51,9 @@ def generate_wrangle_targets : CommandElabM Unit := do
       elabCommand (← 
         `(lean_lib $name:ident { 
             roots := #[$root,`HouLean]
+            defaultFacets := #[`shared]            
             buildType := .release
-            moreLinkArgs := #["-L./build/cpp", "-lHouLeanCApi"] }))
+            moreLinkArgs := depPckgsLinkerFlags }))
     
 #eval generate_wrangle_targets
 
@@ -114,8 +136,17 @@ script install (args) do
               "libleanshared.so"]
     cwd := libDir
   }
+  for (dir,name) in depPckgs do
+    let _ ← IO.Process.run {
+      cmd := "ln"
+      args := #["-sf", 
+                (← IO.currentDir) / ".lake" / "packages" / dir / ".lake" / "build" / "lib" / s!"lib{name}.so" |>.toString,
+                s!"lib{name}.so"]
+      cwd := libDir
+    }
+    
 
-  -- TODO: ensruse that folder: houUserPrefDir / "otl" exists!
+  -- TODO: ensruse that folderleanshared: houUserPrefDir / "otl" exists!
 
   -- link otl
   let _ ← IO.Process.run {

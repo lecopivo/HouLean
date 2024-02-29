@@ -8,3 +8,4 @@
 /houdini/hip/lean/**/*.so
 
 /cpp/compile_commands.json
+/Wrangles/

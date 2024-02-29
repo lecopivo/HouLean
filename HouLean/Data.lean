@@ -1,4 +1,6 @@
-
+import SciLean.Data.DataArray
+import SciLean.Core.FunctionTransformations
+open SciLean
 namespace Hou
 
   structure Vec3 where
