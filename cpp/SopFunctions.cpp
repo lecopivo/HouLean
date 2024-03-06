@@ -109,18 +109,18 @@ extern "C" lean_object *houlean_ro_handle_f(size_t geoId, b_lean_obj_arg _attr, 
   }
 }
 
-extern "C" lean_object* houlean_ro_handle_f_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
+extern "C" double houlean_ro_handle_f_get(b_lean_obj_arg _handle, size_t idx){
 
-  auto ctx    = houlean_lean_to_external<SopContext>(context);
+  // auto ctx    = houlean_lean_to_external<SopContext>(context);
   auto handle = houlean_lean_to_external<GA_ROHandleF>(_handle);
+  const GA_Detail & geo = handle->getAttribute()->getDetail();
 
-  return houlean_sop_mk_float(handle->get(ctx->geo->pointOffset(idx)), context);
+  return handle->get(geo.pointOffset(idx));
 }
 
 
-extern "C" lean_object* houlean_ro_handle_f_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+extern "C" double houlean_ro_handle_f_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w){
 
-  // auto ctx    = houlean_lean_to_external<SopContext>(context);
   auto handle = houlean_lean_to_external<GA_ROHandleF>(_handle);
   
   auto owner  = handle->getAttribute()->getOwner();
@@ -143,7 +143,7 @@ extern "C" lean_object* houlean_ro_handle_f_surface_get(b_lean_obj_arg _handle, 
     result += weightArray(i) * handle->get(offset);
   }
 
-  return houlean_sop_mk_float(result, context);
+  return result;
 }
 
 
@@ -228,19 +228,18 @@ extern "C" lean_object *houlean_ro_handle_v3(size_t geoId, b_lean_obj_arg _attr,
   }
 }
 
-extern "C" lean_object* houlean_ro_handle_v3_get(b_lean_obj_arg _handle, size_t idx, lean_object* context){
+extern "C" lean_object* houlean_ro_handle_v3_get(b_lean_obj_arg _handle, size_t idx){
 
-  auto ctx    = houlean_lean_to_external<SopContext>(context);
   auto handle = houlean_lean_to_external<GA_ROHandleV3>(_handle);
+  const GA_Detail & geo = handle->getAttribute()->getDetail();
 
-  auto vec = handle->get(ctx->geo->pointOffset(idx));
+  auto vec = handle->get(geo.pointOffset(idx));
 
-  return houlean_sop_mk_vec3(vec.x(), vec.y(), vec.z(), context);
+  return houlean_vec3_mk(vec.x(), vec.y(), vec.z());
 }
 
-extern "C" lean_object* houlean_ro_handle_v3_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w, lean_object* context){
+extern "C" lean_object* houlean_ro_handle_v3_surface_get(b_lean_obj_arg _handle, size_t primIdx, double u, double v, double w){
 
-  // auto ctx    = houlean_lean_to_external<SopContext>(context);
   auto handle = houlean_lean_to_external<GA_ROHandleV3>(_handle);
   
   auto owner  = handle->getAttribute()->getOwner();
@@ -263,7 +262,7 @@ extern "C" lean_object* houlean_ro_handle_v3_surface_get(b_lean_obj_arg _handle,
     result += weightArray(i) * handle->get(offset);
   }
 
-  return houlean_sop_mk_vec3(result.x(), result.y(), result.z(), context);
+  return houlean_vec3_mk(result.x(), result.y(), result.z());
 }
 
 

@@ -18,7 +18,7 @@ namespace Hou
   
   def SurfacePoint.primIdx (p : SurfacePoint) : Nat  := p.primIdxUSize.toNat
   def SurfacePoint.uvw     (p : SurfacePoint) : Vec3 := ⟨p.u,p.v,p.w⟩
-  
+
   section Attributes
 
      opaque RWHandleF.nonempty : NonemptyType
@@ -59,11 +59,11 @@ namespace Hou
      @[extern "houlean_ro_handle_f"]
      opaque getROAttrF (geo : USize) (attrib : @& String) (owner : @& AttributeOwner) : Sop ROHandleF
      @[extern "houlean_ro_handle_f_get"]
-     opaque ROHandleF.get (self : @& ROHandleF) (idx : @& USize) : Sop Floatx
+     opaque ROHandleF.get (self : @& ROHandleF) (idx : @& USize) : Float
 
      @[extern "houlean_ro_handle_f_surface_get"]
-     private opaque ROHandleF.surfaceGet' (self : @& ROHandleF) (primIdx : USize) (u v w : Float)  : Sop Float
-     def RWHandleF.surfaceGet (self : @& ROHandleF) (p : SurfacePoint) : Sop Float :=
+     private opaque ROHandleF.surfaceGet' (self : @& ROHandleF) (primIdx : USize) (u v w : Float)  : Float
+     def ROHandleF.surfaceGet (self : @& ROHandleF) (p : SurfacePoint) : Float :=
        self.surfaceGet' p.primIdxUSize p.u p.v p.w
 
      instance : GetElem RWHandleF USize (Sop Float) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
@@ -78,11 +78,11 @@ namespace Hou
      @[extern "houlean_ro_handle_v3"]
      opaque getROAttrV3 (geo : USize) (attrib : @& String) (owner : @& AttributeOwner) : Sop ROHandleV3
      @[extern "houlean_ro_handle_v3_get"]
-     opaque ROHandleV3.get (self : @& ROHandleV3) (idx : @& USize) : Sop Vec3
+     opaque ROHandleV3.get (self : @& ROHandleV3) (idx : @& USize) : Vec3
 
      @[extern "houlean_ro_handle_v3_surface_get"]
-     private opaque ROHandleV3.surfaceGet' (self : @& ROHandleV3) (primIdx : USize) (u v w : Float) : Sop Vec3
-     def ROHandleV3.surfaceGet (self : @& ROHandleV3) (p : SurfacePoint) : Sop Vec3 :=
+     private opaque ROHandleV3.surfaceGet' (self : @& ROHandleV3) (primIdx : USize) (u v w : Float) : Vec3
+     def ROHandleV3.surfaceGet (self : @& ROHandleV3) (p : SurfacePoint) : Vec3 :=
        self.surfaceGet' p.primIdxUSize p.u p.v p.w
 
      instance : GetElem RWHandleV3 USize (Sop Vec3) (λ _ _ => True) := ⟨λ handle idx _ => handle.get idx⟩
@@ -114,5 +114,35 @@ namespace Hou
 
 
   end DistanceQueries
+
+
+  
+
+  section Derivatives
+  open SciLean
+
+  variable 
+    (R) [IsROrC R] 
+    {X} [Vec R X] 
+    {Y} [Vec R Y]
+
+  @[fun_trans]
+  opaque sopDeriv (R) [IsROrC R] {X} [Vec R X] {Y} [Vec R Y] (f : X → Sop Y) (x dx : X) : Sop Y 
+  @[fun_prop]
+  opaque SopDifferentiable (R) [IsROrC R] {X} [Vec R X] {Y} [Vec R Y] (f : X → Sop Y) : Prop
+
+  -- in principle we could provide this but we do not want to
+  @[instance]
+  opaque isntROHandleFVec : Vec R ROHandleF := sorry
+
+  axiom getROAttrF.SopDifferentiable_rule {geo attr owner} : 
+    SopDifferentiable R (fun _ : Unit => getROAttrF geo attr owner)
+
+  axiom getROAttrF.sopDeriv_rule {geo attr owner} : 
+    sopDeriv R (fun _ : Unit => getROAttrF geo attr owner)
+    =
+    (fun _ _ => getROAttrF geo ("d"++attr) owner)
+
+  end Derivatives
 
 end Hou
