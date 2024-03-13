@@ -10,7 +10,7 @@
 #+begin_src
   lake script run compileCpp /opt/hfs19.5
   lake build Aesop:shared Cli:shared ImportGraph:shared LeanColls:shared Mathlib:shared ProofWidgets:shared Qq:shared SciLean:shared Std:shared
-  g++ -shared -o build/libLake.so -Wl,--whole-archive -fvisibility=default $HOME/.elan/toolchains/leanprover--lean4---v4.6.0-rc1/lib/lean/libLake.a -Wl,--no-whole-archive
+  g++ -shared -o build/libLake.so -Wl,--whole-archive -fvisibility=default $HOME/.elan/toolchains/leanprover--lean4---v4.7.0-rc2/lib/lean/libLake.a -Wl,--no-whole-archive
   lake build
   lake script run install ~/houdini19.5
   lake script run setHoudiniEnv ~/houdini19.5  

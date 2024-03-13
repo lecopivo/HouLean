@@ -9,7 +9,7 @@ lean_lib HouLean {
   buildType := .release
 }
 
-require scilean from git "https://github.com/lecopivo/SciLean" @ "v4.6-bump"
+require scilean from git "https://github.com/lecopivo/SciLean" @ "master"
 
 -- can I get this automatically with lake somehow? 
 def depPckgs : Array (String × String) := 
@@ -62,14 +62,16 @@ script compileCpp (args) do
 
   let hfs := System.FilePath.mk (args.getD 0 "")
 
+  let buildDir := (← IO.currentDir) / "build" / "cpp"
+
   -- make build directory
   let _ ← IO.Process.run {
     cmd := "mkdir"
-    args := #["-p", "build/cpp"]
+    args := #["-p", buildDir.toString]
   }
 
   -- run cmake
-  if ¬(← defaultBuildDir / "cpp" / "Makefile" |>.pathExists) then
+  if ¬(← buildDir / "Makefile" |>.pathExists) then
     let runCMake ← IO.Process.spawn {
       cmd := "cmake"
       args := #["../../cpp", 
@@ -77,7 +79,7 @@ script compileCpp (args) do
                 "-DCMAKE_BUILD_TYPE=Release",
                 s!"-DCMAKE_HFS={hfs}",
                 s!"-DCMAKE_LEAN_SYSROOT={← getLeanSysroot}"]
-      cwd := defaultBuildDir / "cpp" |>.toString      
+      cwd := buildDir
     }
     let out ← runCMake.wait
     if out != 0 then
@@ -86,7 +88,7 @@ script compileCpp (args) do
   let runMake ← IO.Process.spawn {
     cmd := "make"
     args := #["-j"]
-    cwd := defaultBuildDir / "cpp" |>.toString
+    cwd := buildDir
   }
   let out ← runMake.wait
   if out != 0 then
@@ -118,6 +120,10 @@ script setHoudiniEnv (args) do
 script install (args) do
 
   let houUserPrefDir := System.FilePath.mk (args.getD 0 "")
+  unless ← houUserPrefDir / "houdini.env" |>.pathExists do
+    IO.println s!"invalid houdini preference directory {houUserPrefDir}"
+    return 1
+
   -- let dsoDir := houUserPrefDir / "dso"
   let libDir := houUserPrefDir / "lib"
   let otlDir := houUserPrefDir / "otls"
