@@ -9,7 +9,6 @@ lean_lib HouLean {
   buildType := .release
 }
 
-
 require scilean from git "https://github.com/lecopivo/SciLean" @ "v4.6-bump"
 
 -- can I get this automatically with lake somehow? 
